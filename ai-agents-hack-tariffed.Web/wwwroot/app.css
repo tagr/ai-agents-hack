@@ -1,0 +1,138 @@
+@charset "UTF-8";
+
+*, *:before,
+*:after {
+    box-sizing: border-box;
+}
+
+
+html {
+    
+    background-position: center;
+    background-size: auto;
+
+}
+
+.water-round-container {
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 50px;
+    animation: water-waves linear infinite;
+    opacity: 20%;
+    transition: opacity 1s, color 5s;
+}
+
+.loading {
+    background: silver;
+}
+
+.active .value {
+    visibility: visible;
+}
+
+.loading .value {
+    transition-duration: 5s;
+    visibility: hidden;
+}
+
+.water-round-container.active {
+    background: initial;
+    border: none;
+    opacity: 100%;
+}
+
+.round-text {
+    position: absolute;
+    z-index: 1000;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    bottom: 30%;
+    text-align: center;
+    font-weight: bold;
+    width: 100%;
+}
+
+    .round-text .value {
+        font-size: 3rem;
+    }
+
+.active .water-wave1 {
+    position: absolute;
+    top: 30%;
+    left: -25%;
+    opacity: 0.7;
+    width: 200%;
+    height: 200%;
+    border-radius: 40%;
+    animation: water-waves linear infinite, filling1 linear normal;
+    animation-duration: 6s;
+}
+
+.active .water-wave2 {
+    position: absolute;
+    top: 20%;
+    left: -35%;
+    opacity: 0.5;
+    width: 200%;
+    height: 200%;
+    border-radius: 35%;
+    animation: water-waves linear infinite, filling2 linear normal;
+    animation-duration: 8s;
+}
+
+.active .water-wave3 {
+    position: absolute;
+    top: 20%;
+    left: -35%;
+    opacity: 0.3;
+    width: 200%;
+    height: 200%;
+    border-radius: 33%;
+    animation: water-waves linear infinite, filling3 linear normal;
+    animation-duration: 10s;
+}
+
+@keyframes filling1 {
+    0% {
+        top: 100%;
+    }
+
+    100% {
+        top: 30%;
+    }
+}
+
+@keyframes filling2 {
+    0% {
+        top: 100%;
+    }
+
+    100% {
+        top: 20%;
+    }
+}
+
+@keyframes filling3 {
+    0% {
+        top: 100%;
+    }
+
+    100% {
+        top: 20%;
+    }
+}
+
+@keyframes water-waves {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

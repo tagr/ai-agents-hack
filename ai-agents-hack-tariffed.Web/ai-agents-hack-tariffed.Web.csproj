@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" Version="9.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ai-agents-hack-tariffed.ApiService\ai-agents-hack-tariffed.ApiService.csproj" />
+    <ProjectReference Include="..\ai-agents-hack-tariffed.ServiceDefaults\ai-agents-hack-tariffed.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>
