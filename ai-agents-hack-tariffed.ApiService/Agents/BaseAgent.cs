@@ -1,21 +1,23 @@
-﻿using System;
+﻿using ai_agents_hack_tariffed.ApiService.Tools;
+using Azure;
+using Azure.AI.Projects;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Azure;
-using Azure.AI.Projects;
-using System.ClientModel;
 using System.Text.Json;
-using ai_agents_hack_tariffed.ApiService.Tools;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace ai_agents_hack_tariffed.ApiService.Agents
 {
 
 
-    public abstract class BaseAgent(AIProjectClient client, string modelName) : IAsyncDisposable
+    public abstract class BaseAgent(AIProjectClient client, string modelName, DbContext? context) : IAsyncDisposable
     {
         protected AIProjectClient Client { get; } = client;
         protected abstract string AgentName { get; }
@@ -240,31 +242,32 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                 return;
             }
 
-            //AsyncCollectionResult<StreamingUpdate> toolOutputUpdate;
-            //if (requiredActionUpdate.FunctionName != nameof(HtsDatabaseTool.GetCountryTariffRateInfo))
-            //{
-            //    toolOutputUpdate = HandleRequiredAction(requiredActionUpdate);
-            //}
-            //else
-            //{
-            //    GetCountryTariffRateInfoArgs args = JsonSerializer.Deserialize<GetCountryTariffRateInfoArgs>(requiredActionUpdate.FunctionArguments, options) ?? throw new InvalidOperationException("Failed to parse JSON object.");
-            //    string result = await HtsDatabaseTool.(args.country);
-            //    toolOutputUpdate = agentClient.SubmitToolOutputsToStreamAsync(
-            //        requiredActionUpdate.Value,
-            //        new List<ToolOutput>([new ToolOutput(requiredActionUpdate.ToolCallId, result)])
-            //    );
-            //}
+            AsyncCollectionResult<StreamingUpdate> toolUpdate;
+            if (requiredActionUpdate.FunctionName != nameof(HtsDatabaseTool.GetCountryTariffRateInfo))
+            {
+                toolUpdate = HandleRequiredAction(requiredActionUpdate);
+            }
+            else
+            {
+                GetCountryTariffRateInfoArgs args = 
+                    JsonConvert.DeserializeObject<GetCountryTariffRateInfoArgs>(requiredActionUpdate.FunctionArguments) 
+                    ?? throw new InvalidOperationException("failed to parse json object.");
 
-            //await foreach (StreamingUpdate toolUpdate in toolOutputUpdate)
-            //{
-            //    await HandleStreamingUpdateAsync(toolUpdate);
-            //}
+                string result = await HtsDatabaseTool.GetCountryTariffRateInfo(args.Country, context);
+                toolUpdate = agentClient.SubmitToolOutputsToStreamAsync(
+                    requiredActionUpdate.Value,
+                    new List<ToolOutput>([new ToolOutput(requiredActionUpdate.ToolCallId, result)])
+                );
+            }
+
+            await foreach (StreamingUpdate update in toolUpdate)
+            {
+                await HandleStreamingUpdateAsync(update);
+            }
         }
 
         public async ValueTask DisposeAsync()
         {
-            //SalesData.Dispose();
-
             if (!disposeAgent)
             {
                 return;
@@ -284,7 +287,7 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
             }
         }
 
-        record GetCountryTariffRateInfoArgs(string country);
+        record GetCountryTariffRateInfoArgs(string Country);
     }
 }
 

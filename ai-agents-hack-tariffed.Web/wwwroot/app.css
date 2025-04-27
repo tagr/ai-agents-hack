@@ -13,6 +13,8 @@ html {
 
 }
 
+/*https://play.tailwindcss.com/jauYBOzBd6*/
+
 .water-round-container {
     margin: 0 auto;
     overflow: hidden;
@@ -23,24 +25,35 @@ html {
     text-align: center;
     line-height: 50px;
     animation: water-waves linear infinite;
-    opacity: 20%;
-    transition: opacity 1s, color 5s;
+    /*transition: opacity 1s, color 5s;*/
 }
 
-.loading {
-    background: silver;
+.loading, .init {
+    background: rgba(220,220,220,0.2);
 }
 
-.active .value {
-    visibility: visible;
-}
-
-.loading .value {
-    transition-duration: 5s;
+.init button {
     visibility: hidden;
 }
 
-.water-round-container.active {
+.inner {
+    opacity: 20%;
+}
+
+.active .inner .value {
+    visibility: visible;
+}
+
+.active button {
+    visibility: hidden;
+}
+
+.loading .value, .init .value {
+    /*transition-duration: 5s;*/
+    visibility: hidden;
+}
+
+.water-round-container.active .inner {
     background: initial;
     border: none;
     opacity: 100%;

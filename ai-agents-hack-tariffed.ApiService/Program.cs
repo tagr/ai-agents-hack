@@ -6,6 +6,7 @@ using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.SqlServer;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,16 +35,10 @@ string projectConnectionString = app.Configuration["Azure:AiAgentService"] ?? th
 AIProjectClient projectClient = new(projectConnectionString, new AzureCliCredential());
 
 //Initialize agents
-
-await using PrimaryProducerAgent ppAgent = new PrimaryProducerAgent(projectClient, apiDeploymentName);
-await using HtsLookupAgent htsAgent = new HtsLookupAgent(projectClient, apiDeploymentName);
+await using PrimaryProducerAgent ppAgent = new(projectClient, apiDeploymentName);
+await using HtsLookupAgent htsAgent = new(projectClient, apiDeploymentName);
 await ppAgent.RunAsync();
 await htsAgent.RunAsync();
-
-//var pp = await ppAgent.GetResponseAsync("Coco coir");
-//var hts = await htsAgent.GetResponseAsync("Coco coir");
-
-//Console.WriteLine($"Coco coir Primary Producer: {pp}, HTS number {hts}");
 
 
 // Configure the HTTP request pipeline.
@@ -62,7 +57,7 @@ app.MapPost("/producer/{search}", async ([FromRoute] string search, TariffRateDb
 
     return (tr == null) ? response : new ApiResponse
     {
-        Message = tr.Country + " " + tr.PercentOfTrade,
+        Message = JsonConvert.SerializeObject(tr),
         Error = string.Empty,
         Success = true
     };

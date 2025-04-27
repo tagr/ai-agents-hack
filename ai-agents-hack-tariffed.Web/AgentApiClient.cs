@@ -8,9 +8,9 @@ namespace ai_agents_hack_tariffed.Web
 {
     public class AgentApiClient(HttpClient httpClient, [FromServices] IMemoryCache memoryCache)
     {
-        public async Task<ApiResponse?> GetPrimaryProducerAsync(string search)
+        public async Task<PrimaryProducerApiResponse?> GetPrimaryProducerAsync(string search)
         {
-            if (!memoryCache.TryGetValue(search, out ApiResponse? value))
+            if (!memoryCache.TryGetValue(search, out PrimaryProducerApiResponse? value))
             {
                 var response = await httpClient.PostAsync($"/producer/{search}", null);
 
@@ -20,19 +20,15 @@ namespace ai_agents_hack_tariffed.Web
 
                 if (result == null)
                 {
-                    return new ApiResponse
-                    {
-                        Error = "No producer found for the given search term.",
-                        Success = false
-                    };
+                    return new PrimaryProducerApiResponse(new ApiResponse());
                 }
 
                 if (result.Success)
                 {
-                    return result;
+                    return new PrimaryProducerApiResponse(result);
                 }
 
-                value = result;
+                value = new PrimaryProducerApiResponse(result);
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetSlidingExpiration(TimeSpan.FromSeconds(uint.MaxValue));
@@ -44,11 +40,7 @@ namespace ai_agents_hack_tariffed.Web
                 return value;
             }
 
-            return new ApiResponse
-            {
-                Error = "API returned no results.",
-                Success = false
-            };
+            return new PrimaryProducerApiResponse(new ApiResponse());
         }
     }
 }

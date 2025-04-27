@@ -17,14 +17,14 @@
   
 </div>
 
-<div class="mx-auto mt-12 flex max-w-5xl h-12 items-center overflow-hidden rounded-lg bg-white shadow-lg">
+<div class="mx-auto mt-12 flex max-w-2xl h-12 items-center overflow-hidden rounded-lg bg-white shadow-lg">
     <div class="grid h-full w-12 place-items-center text-gray-400">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
     </div>
 
-    <form @onsubmit='() => search(searchQuery)'>
+    <form class="w-full" @onsubmit='() => search(searchQuery)'>
         <InputText @bind-Value=searchQuery
                    class="text-lg w-full font-semibold text-gray-800 outline-none"
                 id="search"
@@ -33,75 +33,108 @@
 </div>
 
 <div class="mx-auto mt-12 flex max-w-5xl rounded-lg bg-white px-6 py-8 subpixel-antialiased">
-    <div class="water-round-container @activeClass bg-white">
-    <div class="water-wave1 bg-gradient-to-r from-red-500 to-red-800"></div>
-    <div class="water-wave2 bg-red-600"></div>
-    <div class="water-wave3 bg-gradient-to-r from-red-500 to-red-600"></div>
-    <div class="round-text">
-      <div class="value mb-5">@primaryProducer</div>
-      <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600 opacity-80 ">
-        Primary Producer
-        <p class="text-xs font-light leading-2 mt-1">Where most imports come from</p>
-      </div>
+    <div class="water-round-container @activeClass1 bg-white">
+        <div class="inner">
+            <div class="water-wave1 bg-gradient-to-r from-@flag1-600 to-@flag1-900"></div>
+            <div class="water-wave2 bg-@flag2-600"></div>
+            <div class="water-wave3 bg-gradient-to-r from-@flag3-500 to-@flag3-800"></div>
+            <div class="round-text">
+                <div class="value mb-5">@primaryProducer</div>
+                <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600 opacity-80 ">
+                Primary Producer
+                <p class="text-xs font-light leading-2 mt-1">Where most imports come from</p>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="mt-20 inline-flex items-center rounded-md bg-indigo-500 px-4 py-2 mt-4 text-sm leading-6 font-semibold text-white transition duration-150 ease-in-out hover:bg-indigo-400" disabled="">
+            <svg class="mr-3 -ml-1 size-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Agent Working
+        </button>
     </div>
-  </div>
 
-    <div class="water-round-container @activeClass bg-white">
-    <div class="round-text">
-      <div class="value mb-6">140%</div>
-      <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600 opacity-80 ">
-        Tax due upon import
-        <p class="text-xs font-light leading-2 mt-1">As a percentage of value</p>
-      </div>
+    <div class="water-round-container @activeClass2 bg-white">
+        <div class="inner">
+            <div class="round-text">
+                <div class="value mb-6">140%</div>
+                <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600 opacity-80 ">
+                Tax due upon import
+                <p class="text-xs font-light leading-2 mt-1">As a percentage of value</p>
+                </div>
+            </div>
+            <div class="water-wave1 bg-gradient-to-r from-cyan-300 to-green-500"></div>
+            <div class="water-wave2 bg-cyan-300"></div>
+            <div class="water-wave3 bg-gradient-to-r from-blue-700 to-cyan-300"></div>
+        </div>
+        <button type="button" class="mt-20 inline-flex items-center rounded-md bg-indigo-500 px-4 py-2 mt-4 text-sm leading-6 font-semibold text-white transition duration-150 ease-in-out hover:bg-indigo-400" disabled="">
+            <svg class="mr-3 -ml-1 size-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Agent Working
+        </button>
     </div>
-    <div class="water-wave1 bg-gradient-to-r from-cyan-300 to-green-500"></div>
-    <div class="water-wave2 bg-cyan-300"></div>
-    <div class="water-wave3 bg-gradient-to-r from-blue-700 to-cyan-300"></div>
-    
-  </div>
 
-    <div class="water-round-container @activeClass bg-white">
-    <div class="round-text">
-      <div class="value mb-6">YES</div>
-      <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600 opacity-80 ">
-        Special Trade Agreements
-        <p class="text-xs font-light leading-2 mt-1">Could qualify for lower duties</p>
+    <div class="water-round-container @activeClass3 bg-white">
+        <div class="inner">
+            <div class="round-text">
+                <div class="value mb-6">YES</div>
+                <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600 opacity-80 ">
+                Special Trade Agreements
+                <p class="text-xs font-light leading-2 mt-1">Could qualify for lower duties</p>
         
-      </div>
+                </div>
+            </div>
+            <div class="water-wave1 bg-gradient-to-r from-cyan-300 to-green-500"></div>
+            <div class="water-wave2 bg-cyan-300"></div>
+            <div class="water-wave3 bg-gradient-to-r from-blue-700 to-cyan-300"></div>
+        </div>
+        <button type="button" class="mt-20 inline-flex items-center rounded-md bg-indigo-500 px-4 py-2 mt-4 text-sm leading-6 font-semibold text-white transition duration-150 ease-in-out hover:bg-indigo-400" disabled="">
+            <svg class="mr-3 -ml-1 size-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Agent Working
+        </button>
     </div>
-    <div class="water-wave1 bg-gradient-to-r from-cyan-300 to-green-500"></div>
-    <div class="water-wave2 bg-cyan-300"></div>
-    <div class="water-wave3 bg-gradient-to-r from-blue-700 to-cyan-300"></div>
-  </div>
 </div>
 
 @code {
-    private const string PRIMARY_PRODUCER = "PRIMARY PRODUCER";
     private const string ACTIVE_CLASS = "active";
     private const string LOADING_CLASS = "loading";
+    private const string FLAG_COLOR = "cyan";
 
-    private string primaryProducer = LOADING_CLASS;
-    private string activeClass = string.Empty;
-    private ApiResponse? response;
+    private string primaryProducer = string.Empty;
+    private string activeClass1 = "init";
+    private string activeClass2 = "init";
+    private string activeClass3 = "init";
+
+    private string flag1 = FLAG_COLOR;
+    private string flag2 = FLAG_COLOR;
+    private string flag3 = FLAG_COLOR;
+
+    private PrimaryProducerApiResponse? response;
     private string searchQuery = string.Empty;
 
 
     protected override async Task OnInitializedAsync()
     {
-        SetDefaults(response);
-
         await base.OnInitializedAsync();
     }
 
     private async Task search(string text)
     {
+        if (text.Trim().Length == 0) return;
+
         searchQuery = text;
         response = null;
         SetDefaults(response);
 
         response = await AgentApi.GetPrimaryProducerAsync(text);
 
-        if (response != null && response.Message == string.Empty)
+        if (response != null && response.TariffRate.Country == string.Empty)
         {
             response = null;
         }
@@ -109,16 +142,22 @@
         SetDefaults(response);
     }
 
-    private void SetDefaults(ApiResponse? response)
+    private void SetDefaults(PrimaryProducerApiResponse? response)
     {
         if (response == null)
         {
-            primaryProducer = PRIMARY_PRODUCER;
-            activeClass = LOADING_CLASS;
+            primaryProducer = string.Empty;
+            activeClass1 = LOADING_CLASS;
+            flag1 = FLAG_COLOR;
+            flag2 = FLAG_COLOR;
+            flag3 = FLAG_COLOR;
             return;
         }
 
-        primaryProducer = response.Message;
-        activeClass = ACTIVE_CLASS;
+        primaryProducer = response.TariffRate.Country;
+        flag1 = response.TariffRate.FlagColor1;
+        flag2 = response.TariffRate.FlagColor2;
+        flag3 = response.TariffRate.FlagColor3;
+        activeClass1 = ACTIVE_CLASS;
     }
 }

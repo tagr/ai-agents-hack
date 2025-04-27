@@ -8,7 +8,7 @@ var sql = builder.AddSqlServer("sql")
 
 var initScriptPath = Path.Join(Path.GetDirectoryName(typeof(Program).Assembly.Location), "init.sql");
 var db = sql.AddDatabase("ai-agent-hackathon")
-    .WithCreationScript(File.ReadAllText(initScriptPath));
+    .WithCreationScript(await File.ReadAllTextAsync(initScriptPath));
 
 var apiService = builder.AddProject<Projects.ai_agents_hack_tariffed_ApiService>("apiservice")
     .WithReference(db)
