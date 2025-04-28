@@ -42,4 +42,10 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 * Update `ai-agents-hack-tariffed.AppHost/Properties/launchSettings.json` and modify the `BING_GROUNDING_CONNECTION_NAME` value with your value.
 * Update `ai-agents-hack-tariffed.ApiService\appsettings.json` and modify the `AiAgentService` value with the AI Foundry project connection string
 
+### Architecture
 
+### Samples
+
+### Project Video
+
+### Acknowledgements
