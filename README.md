@@ -20,8 +20,10 @@ This problem, and the dizzying pace of news about trade wars and supply chain di
 Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 
 ### Technologies Applied
-* [Azure AI Agent Service](https://learn.microsoft.com/en-us/azure/ai-services/agents/overview)
-* [Grounding with Bing Search](https://learn.microsoft.com/en-us/azure/ai-services/agents/how-to/tools/bing-grounding?tabs=python&pivots=overview)
-* [.NET 9 Framework](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview)
-* [.NET Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview)
-* [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
+* 🤖 [Azure AI Agent Service](https://learn.microsoft.com/en-us/azure/ai-services/agents/overview)
+* 👀 [Grounding with Bing Search](https://learn.microsoft.com/en-us/azure/ai-services/agents/how-to/tools/bing-grounding?tabs=python&pivots=overview)
+* 🟣 [.NET 9 Framework](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview)
+* 🟣 [.NET Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview)
+* 🟣 [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
+* 🟣 SQL Server 2022
+* 🐋 [Docker Desktop 4.40](https://docs.docker.com/desktop/release-notes/#4400)
