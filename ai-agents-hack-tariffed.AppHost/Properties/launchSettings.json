@@ -10,7 +10,8 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "DOTNET_ENVIRONMENT": "Development",
         "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21139",
-        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22268"
+        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22268",
+        "BING_GROUNDING_CONNECTION_NAME": "[Grounding with Bing Search Connection Name]"
       }
     },
     "http": {

@@ -35,11 +35,18 @@ string projectConnectionString = app.Configuration["Azure:AiAgentService"] ?? th
 AIProjectClient projectClient = new(projectConnectionString, new AzureCliCredential());
 
 //Initialize agents
+using var scope = app.Services.CreateScope();
+var tariffDbContext = scope.ServiceProvider.GetRequiredService<TariffRateDb>();
+
 await using PrimaryProducerAgent ppAgent = new(projectClient, apiDeploymentName);
 await using HtsLookupAgent htsAgent = new(projectClient, apiDeploymentName);
-await ppAgent.RunAsync();
-await htsAgent.RunAsync();
+await using TariffRateAgent tAgent = new(projectClient, apiDeploymentName);
+await using SpecialAgent sAgent = new(projectClient, apiDeploymentName);
 
+await ppAgent.RunAsync(tariffDbContext);
+await htsAgent.RunAsync(tariffDbContext);
+await tAgent.RunAsync(tariffDbContext);
+await sAgent.RunAsync(tariffDbContext);
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
@@ -64,13 +71,63 @@ app.MapPost("/producer/{search}", async ([FromRoute] string search, TariffRateDb
 
 });
 
+//Returns the tariff rate given a producing country. Should use tools to query the database.
+app.MapPost("/tariff/{search}", async ([FromRoute] string search, TariffRateDb db) =>
+{
+    var prompt = $"What is the tariff rate for {search}?";
+    var response = await tAgent.GetResponseAsync(prompt, ".");
+
+    if (response.Message.Contains("Rate limit", StringComparison.InvariantCultureIgnoreCase))
+    {
+        return new ApiResponse
+        {
+            Message = string.Empty,
+            Error = response.Message,
+            Success = false
+        };
+    }
+
+    return response;
+});
+
+//Returns tariff agreements for a specified country. Should use tools to query the database.
+app.MapPost("/special/{search}", async ([FromRoute] string search, TariffRateDb db) =>
+{
+    var prompt = $"List all applicable trade agreements for {search}?";
+    var response = await sAgent.GetResponseAsync(prompt);
+
+    if (response.Message.Contains("Rate limit", StringComparison.InvariantCultureIgnoreCase))
+    {
+        return new ApiResponse
+        {
+            Message = string.Empty,
+            Error = response.Message,
+            Success = false
+        };
+    }
+
+    return response;
+});
+
 //Returns the best matching Harmonized tariff schedule number for a particular good.
 app.MapPost("/hts/{search}", async ([FromRoute] string search) =>
 {
-    return await htsAgent.GetResponseAsync(search);
+    var prompt = $"Find substitute goods for {search} produced in the US.";
+    var response = await htsAgent.GetResponseAsync(prompt);
+
+    if (response.Message.Contains("Rate limit", StringComparison.InvariantCultureIgnoreCase))
+    {
+        return new ApiResponse
+        {
+            Message = string.Empty,
+            Error = response.Message,
+            Success = false
+        };
+    }
+
+    return response;
 });
 
 app.MapDefaultEndpoints();
 
 app.Run();
-

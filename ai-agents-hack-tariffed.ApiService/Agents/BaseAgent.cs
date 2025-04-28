@@ -1,25 +1,20 @@
 ﻿using ai_agents_hack_tariffed.ApiService.Tools;
-using Azure;
 using Azure.AI.Projects;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
+using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System;
 using System.ClientModel;
-using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace ai_agents_hack_tariffed.ApiService.Agents
 {
-
-
-    public abstract class BaseAgent(AIProjectClient client, string modelName, DbContext? context) : IAsyncDisposable
+    public abstract class BaseAgent(AIProjectClient client, string modelName) : IAsyncDisposable
     {
+        protected DbContext? context;
         protected AIProjectClient Client { get; } = client;
+        protected abstract string Schema { get; }
         protected abstract string AgentName { get; }
         protected string ModelName { get; } = modelName;
         protected AgentsClient? agentClient;
@@ -39,35 +34,67 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
 
         public virtual IEnumerable<ToolDefinition> InitializeTools() => [];
 
-        private IEnumerable<ToolDefinition> SetupTools() => [
-            new FunctionToolDefinition(
-            name: nameof(HtsDatabaseTool.GetCountryTariffRateInfo),
-            description: "This function is used to get tariff rates and country information in the HTS database",
-            parameters: BinaryData.FromObjectAsJson(new {
-                Type = "object",
-                Properties = new {
-                    Query = new {
-                        Type = "string",
-                        Description = "The input should be the country representing a major importer of goods and commodities. The query result will be returned as a JSON object."
-                    }
-                },
-                Required = new [] { "query" }
-            },
-            new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
-        )
-        ];
-
-        public async Task RunAsync()
+        private async Task<IEnumerable<ToolDefinition>> SetupTools(AIProjectClient client)
         {
+            ConnectionResponse bingConnection = await client.GetConnectionsClient()
+                .GetConnectionAsync(Environment.GetEnvironmentVariable("BING_GROUNDING_CONNECTION_NAME"));
+            var connectionId = bingConnection.Id;
+
+            ToolConnectionList connectionList = new()
+            {
+                ConnectionList = { new ToolConnection(connectionId) }
+            };
+            BingGroundingToolDefinition bingGroundingTool = new(connectionList);
+
+            return [
+            new FunctionToolDefinition(
+                name: nameof(HtsDatabaseTool.Query),
+                description: "This function is used to get tariff rates and country information in the HTS database",
+                parameters: BinaryData.FromObjectAsJson(new {
+                    Type = "object",
+                    Properties = new {
+                        Query = new {
+                            Type = "string",
+                            Description = "The input should be the country representing a major importer of goods and commodities. The query result will be returned as a JSON object."
+                        }
+                    },
+                    Required = new [] { "query" }
+                },
+                new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
+            ),
+            new FunctionToolDefinition(
+                name: nameof(HtsDatabaseTool.QueryAll),
+                description: "This function should query all trade agreements and HTS goods.",
+                parameters: BinaryData.FromObjectAsJson(new {
+                    Type = "object",
+                    Properties = new {
+                        Query = new {
+                            Type = "string",
+                            Description = "The input should be a well-formed T-SQL query selecting all agreements and Harmonized Tariff Schedules. The query result will be returned as a JSON object.."
+                        }
+                    },
+                    Required = new [] { "query" }
+                },
+                new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
+            ),
+            bingGroundingTool
+        ];
+        }
+
+        public async Task RunAsync(DbContext context)
+        {
+            this.context = context;
             await Console.Out.WriteLineAsync("Creating agent...");
             agentClient = Client.GetAgentsClient();
 
             await InitializeAsync(agentClient);
+         
 
-            IEnumerable<ToolDefinition> tools = SetupTools();
+
+            IEnumerable<ToolDefinition> tools = await SetupTools(Client);
             ToolResources? toolResources = InitializeResources();
 
-            string instructions = CreateInstructions();
+            string instructions = await CreateInstructions();
 
             agent = await agentClient.CreateAgentAsync(
                 model: ModelName,
@@ -76,7 +103,11 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                 tools: tools,
                 temperature: temperature,
                 topP: topP,
-                toolResources: toolResources
+                toolResources: toolResources,
+                metadata: new Dictionary<string, string>
+                {
+                    { "x-ms-enable-preview", "true" }
+                }
             );
 
             await Console.Out.WriteLineAsync($"{AgentName} created with ID: {agent.Id}");
@@ -86,8 +117,9 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
             await Console.Out.WriteLineAsync($"{AgentName} ({agent.Id}) Thread created with ID: {thread.Id}");
         }
 
-        public async Task<ApiResponse> GetResponseAsync(string prompt)
+        public async Task<ApiResponse> GetResponseAsync(string prompt, string errorContains = "Error:", [CallerMemberName] string callerName = "")
         {
+            
             await Console.Out.WriteLineAsync($"API Request: {prompt}");
             var response = new ApiResponse
             {
@@ -117,8 +149,8 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                 AsyncCollectionResult<StreamingUpdate> streamingUpdate = agentClient.CreateRunStreamingAsync(
                 threadId: thread.Id,
                 assistantId: agent.Id,
-                maxCompletionTokens: maxCompletionTokens,
-                maxPromptTokens: maxPromptTokens,
+                //maxCompletionTokens: maxCompletionTokens,
+                //maxPromptTokens: maxPromptTokens,
                 temperature: temperature,
                 topP: topP
             );
@@ -131,9 +163,16 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                 }
 
                 //Build response
-                response.Message = message.ToString().Contains("Error:") ? string.Empty : message.ToString();
-                response.Error = message.ToString().Contains("Error:") ? message.ToString() : string.Empty;
-                response.Success = !message.ToString().Contains("Error:");
+                response.Message = message.ToString().Contains(errorContains, StringComparison.InvariantCultureIgnoreCase)
+                    ? string.Empty
+                    : message.ToString();
+                response.Error = string.IsNullOrEmpty(message.ToString())
+                    ? $"Response from agent was empty. Caller: {callerName}"
+                    : message.ToString().Contains(errorContains, StringComparison.InvariantCultureIgnoreCase)
+                        ? message.ToString()
+                        : string.Empty;
+                response.Success = !string.IsNullOrEmpty(message.ToString())
+                    && !message.ToString().Contains(errorContains, StringComparison.InvariantCultureIgnoreCase);
 
                 return response;
 
@@ -147,9 +186,17 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
 
         protected virtual ToolResources? InitializeResources() => null;
 
-        protected virtual string CreateInstructions()
+        protected async virtual Task<string> CreateInstructions()
         {
             string instructions = File.ReadAllText(InstructionsFileName);
+
+            if (context is null)
+            {
+                return instructions;
+            }
+
+            string schema = await HtsDatabaseTool.GetTariffRateDbSchema(Schema, context);
+            instructions = instructions.Replace("{database_schema_string}", schema);
 
             return instructions;
         }
@@ -180,15 +227,6 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                     MessageStatusUpdate messageStatusUpdate = (MessageStatusUpdate)update;
                     ThreadMessage tm = messageStatusUpdate.Value;
 
-                    var contentItems = tm.ContentItems;
-
-                    foreach (MessageContent contentItem in contentItems)
-                    {
-                        if (contentItem is MessageImageFileContent imageContent)
-                        {
-                            await DownloadImageFileContentAsync(imageContent);
-                        }
-                    }
                     break;
 
                 case StreamingUpdateReason.RunCompleted:
@@ -210,28 +248,6 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
             return message;
         }
 
-        private async Task DownloadImageFileContentAsync(MessageImageFileContent imageContent)
-        {
-            if (agentClient is null)
-            {
-                return;
-            }
-
-            //Utils.LogGreen($"Getting file with ID: {imageContent.FileId}");
-
-            //BinaryData fileContent = await agentClient.GetFileContentAsync(imageContent.FileId);
-            //string directory = Path.Combine(SharedPath, "files");
-            //if (!Directory.Exists(directory))
-            //{
-            //    Directory.CreateDirectory(directory);
-            //}
-
-            //string filePath = Path.Combine(directory, imageContent.FileId + ".png");
-            //await File.WriteAllBytesAsync(filePath, fileContent.ToArray());
-
-            Utils.LogGreen($"File save to ");
-        }
-
         protected virtual AsyncCollectionResult<StreamingUpdate> HandleRequiredAction(RequiredActionUpdate requiredActionUpdate) =>
             throw new NotImplementedException();
 
@@ -243,21 +259,35 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
             }
 
             AsyncCollectionResult<StreamingUpdate> toolUpdate;
-            if (requiredActionUpdate.FunctionName != nameof(HtsDatabaseTool.GetCountryTariffRateInfo))
+            if (requiredActionUpdate.FunctionName == nameof(HtsDatabaseTool.Query))
             {
-                toolUpdate = HandleRequiredAction(requiredActionUpdate);
-            }
-            else
-            {
-                GetCountryTariffRateInfoArgs args = 
-                    JsonConvert.DeserializeObject<GetCountryTariffRateInfoArgs>(requiredActionUpdate.FunctionArguments) 
+                TariffDatabaseArgs args =
+                    JsonConvert.DeserializeObject<TariffDatabaseArgs>(requiredActionUpdate.FunctionArguments)
                     ?? throw new InvalidOperationException("failed to parse json object.");
 
-                string result = await HtsDatabaseTool.GetCountryTariffRateInfo(args.Country, context);
+                string result = await HtsDatabaseTool.Query(args.query, context);
                 toolUpdate = agentClient.SubmitToolOutputsToStreamAsync(
                     requiredActionUpdate.Value,
                     new List<ToolOutput>([new ToolOutput(requiredActionUpdate.ToolCallId, result)])
                 );
+                
+            }
+            else if (requiredActionUpdate.FunctionName == nameof(HtsDatabaseTool.QueryAll))
+            {
+                TariffDatabaseArgs args =
+                    JsonConvert.DeserializeObject<TariffDatabaseArgs>(requiredActionUpdate.FunctionArguments)
+                    ?? throw new InvalidOperationException("failed to parse json object.");
+
+                string result = await HtsDatabaseTool.QueryAll(args.query, context);
+                toolUpdate = agentClient.SubmitToolOutputsToStreamAsync(
+                    requiredActionUpdate.Value,
+                    new List<ToolOutput>([new ToolOutput(requiredActionUpdate.ToolCallId, result)])
+                );
+
+            }
+            else
+            {
+                toolUpdate = HandleRequiredAction(requiredActionUpdate);
             }
 
             await foreach (StreamingUpdate update in toolUpdate)
@@ -287,7 +317,7 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
             }
         }
 
-        record GetCountryTariffRateInfoArgs(string Country);
+        record TariffDatabaseArgs(string query);
     }
 }
 

@@ -7,7 +7,7 @@ namespace ai_agents_hack_tariffed.Web
 {
     public class PrimaryProducerApiResponse
     {
-        public readonly TariffRate TariffRate;
+        public TariffRate TariffRate { get; } = new();
         public readonly ApiResponse ApiResponse;
         public PrimaryProducerApiResponse(ApiResponse api)
         {

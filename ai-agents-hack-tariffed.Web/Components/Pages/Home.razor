@@ -1,5 +1,7 @@
 ﻿@page "/"
 @using ai_agents_hack_tariffed.ApiService
+@using Markdig
+@inject IServiceProvider ServiceProvider
 @rendermode InteractiveServer
 @attribute [StreamRendering(true)]
 
@@ -17,7 +19,7 @@
   
 </div>
 
-<div class="mx-auto mt-12 flex max-w-2xl h-12 items-center overflow-hidden rounded-lg bg-white shadow-lg">
+<div class="mx-auto mt-12 flex max-w-2xl h-12 items-center overflow-hidden rounded-lg bg-white shadow-sm">
     <div class="grid h-full w-12 place-items-center text-gray-400">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -32,7 +34,7 @@
     </form>
 </div>
 
-<div class="mx-auto mt-12 flex max-w-5xl rounded-lg bg-white px-6 py-8 subpixel-antialiased">
+<div class="mx-auto mt-4 flex max-w-5xl rounded-lg bg-white px-6 py-8 subpixel-antialiased">
     <div class="water-round-container @activeClass1 bg-white">
         <div class="inner">
             <div class="water-wave1 bg-gradient-to-r from-@flag1-600 to-@flag1-900"></div>
@@ -40,7 +42,7 @@
             <div class="water-wave3 bg-gradient-to-r from-@flag3-500 to-@flag3-800"></div>
             <div class="round-text">
                 <div class="value mb-5">@primaryProducer</div>
-                <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600 opacity-80 ">
+                <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600">
                 Primary Producer
                 <p class="text-xs font-light leading-2 mt-1">Where most imports come from</p>
                 </div>
@@ -55,11 +57,11 @@
         </button>
     </div>
 
-    <div class="water-round-container @activeClass2 bg-white">
+    <div @onclick='() => SetTariffRate(primaryProducer)' class="water-round-container @activeClass2 bg-white cursor-pointer">
         <div class="inner">
             <div class="round-text">
-                <div class="value mb-6">140%</div>
-                <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600 opacity-80 ">
+                <div class="value mb-6">@tariffRate</div>
+                <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600">
                 Tax due upon import
                 <p class="text-xs font-light leading-2 mt-1">As a percentage of value</p>
                 </div>
@@ -75,13 +77,22 @@
             </svg>
             Agent Working
         </button>
+
+        <div class="retry @retryActive mt-20 inline-flex items-center rounded-md bg-red-600
+            px-4 py-2 text-sm leading-6 font-semibold text-white transition duration-150 ease-in-out hover:bg-red-700 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+
+            &nbsp;Retry
+        </div>
     </div>
 
     <div class="water-round-container @activeClass3 bg-white">
         <div class="inner">
             <div class="round-text">
                 <div class="value mb-6">YES</div>
-                <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600 opacity-80 ">
+                <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600">
                 Special Trade Agreements
                 <p class="text-xs font-light leading-2 mt-1">Could qualify for lower duties</p>
         
@@ -101,15 +112,56 @@
     </div>
 </div>
 
+@* Substitute Goods *@
+<div class="substitute @activeSubstitute mx-auto mt-12 max-w-2xl bg-gradient-to-r from-cyan-700 to-cyan-500 p-4 rounded-xl transition-opacity ">
+    <h3 class="text-4xl block font-normal text-white">Substitute Goods</h3>
+    <p class="text-xs text-white">
+        Powered by <strong>Grounding with Bing Search</strong>
+    </p>
+    <p class="text-white mt-6">
+        @((MarkupString)Markdown.ToHtml(searchResults))
+    </p>
+</div>
+
+@* Error message *@
+<div class="error @activeError mx-auto mt-12 max-w-2xl bg-gradient-to-r from-red-500 to-red-400 rounded-lg p-6 transition-opacity border-red-200">
+    <strong class="text-4xl block mb-2 text-white">Oops</strong>
+    <p class="font-medium text-white">
+        @errorMessage
+    </p>
+    <p class="font-light text-white mt-6">
+        <div @onclick='() => search(searchQuery)' href="" class="hover:underline cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+
+            </svg>
+            Try "@searchQuery" again
+        </div>
+    </p>
+</div>
+
 @code {
+    private const uint MAX_TARIFF_RATE_RETRIES = 2;
     private const string ACTIVE_CLASS = "active";
     private const string LOADING_CLASS = "loading";
     private const string FLAG_COLOR = "cyan";
+    private const string INIT = "init";
 
     private string primaryProducer = string.Empty;
-    private string activeClass1 = "init";
-    private string activeClass2 = "init";
-    private string activeClass3 = "init";
+    private string tariffRate = string.Empty;
+    private int tariffRateRetries = 0;
+    private string activeClass1 = INIT;
+    private string activeClass2 = INIT;
+    private string activeClass3 = INIT;
+
+    private string searchResults = string.Empty;
+
+    private string retryActive = string.Empty;
+
+    private string errorMessage = string.Empty;
+    private string activeError = string.Empty;
+
+    private string activeSubstitute = "hidden";
 
     private string flag1 = FLAG_COLOR;
     private string flag2 = FLAG_COLOR;
@@ -130,19 +182,54 @@
 
         searchQuery = text;
         response = null;
-        SetDefaults(response);
+        SetError(string.Empty);
+        SetProducerDefaults(response);
+        await SetTariffDefaults(null);
+        await SetSubstitutes(text);
 
         response = await AgentApi.GetPrimaryProducerAsync(text);
 
-        if (response != null && response.TariffRate.Country == string.Empty)
-        {
-            response = null;
-        }
 
-        SetDefaults(response);
+        SetProducerDefaults(response);
+        await SetTariffRate(response.TariffRate.Country);
     }
 
-    private void SetDefaults(PrimaryProducerApiResponse? response)
+    private async Task SetTariffRate(string country)
+    {
+        if (string.IsNullOrEmpty(country)) return;
+
+        retryActive = string.Empty;
+        var tariffResponse = await AgentApi.GetTariffRateAsync(country);
+        await SetTariffDefaults(tariffResponse);
+    }
+
+    private async Task SetSubstitutes(string text)
+    {
+        var subResponse = await AgentApi.GetSubstitutes(text);
+        SetSubstituteDefaults(subResponse);
+    }
+
+    private void SetSubstituteDefaults(ApiResponse? response)
+    {
+        if (response == null)
+        {
+            activeSubstitute = string.Empty;
+            return;
+        }
+        if (!response.Success || string.IsNullOrEmpty(response.Message))
+        {
+            activeSubstitute = string.Empty;
+            SetError("Tariff rate could not be returned.");
+            return;
+        }
+
+        //Success
+        searchResults = response.Message;
+        SetError(string.Empty);
+        activeSubstitute = response.Message;
+    }
+
+    private void SetProducerDefaults(PrimaryProducerApiResponse? response)
     {
         if (response == null)
         {
@@ -160,4 +247,52 @@
         flag3 = response.TariffRate.FlagColor3;
         activeClass1 = ACTIVE_CLASS;
     }
+
+    private async Task SetTariffDefaults(ApiResponse? response)
+    {
+        
+        await Task.Delay(2000);
+        activeClass2 = LOADING_CLASS;
+
+        if (response == null)
+        {
+            tariffRate = string.Empty;
+            activeClass2 = activeClass1;
+            SetError(string.Empty);
+            return;
+        }
+
+        if (!response.Success || string.IsNullOrEmpty(response.Message))
+        {
+            tariffRate = string.Empty;
+            activeClass2 = INIT;
+            SetError("Tariff rate could not be returned.");
+            retryActive = ACTIVE_CLASS;
+            return;
+        }
+
+        //Success
+        SetError(string.Empty);
+
+        tariffRate = response.Message;
+        activeClass2 = ACTIVE_CLASS;
+        tariffRateRetries = 0;
+    }
+
+    private void SetError(string message)
+    {
+        if (string.IsNullOrEmpty(message))
+        {
+            errorMessage = string.Empty;
+            activeError = string.Empty;
+            retryActive = string.Empty;
+            return;
+        }
+
+        errorMessage = message;
+        activeError = ACTIVE_CLASS;
+    }
 }
+
+
+<div class="text-center pt-4 w-full text-sm">Made with 🤍 by Andy Merhaut</div>

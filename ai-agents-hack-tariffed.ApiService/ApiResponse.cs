@@ -4,7 +4,7 @@
     {
         public string Message { get; set; } = string.Empty;
         public string Error { get; set; } = string.Empty;
-        public bool Success { get; set; } = true;
+        public bool Success { get; set; } = false;
         public ApiResponse(string message)
         {
             Message = message;
