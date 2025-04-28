@@ -1,4 +1,5 @@
-﻿using ai_agents_hack_tariffed.ApiService.Tools;
+﻿using ai_agents_hack_tariffed.ApiService.Data;
+using ai_agents_hack_tariffed.ApiService.Tools;
 using Azure.AI.Projects;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
@@ -10,13 +11,12 @@ using System.Text.Json;
 
 namespace ai_agents_hack_tariffed.ApiService.Agents
 {
-    public abstract class BaseAgent(AIProjectClient client, string modelName) : IAsyncDisposable
+    public abstract class BaseAgent(IAgentParameters parameters, TariffRateDb context) : IAsyncDisposable
     {
-        protected DbContext? context;
-        protected AIProjectClient Client { get; } = client;
+        protected DbContext? context = context;
+        protected AIProjectClient Client { get; } = parameters.ProjectClient;
         protected abstract string Schema { get; }
-        protected abstract string AgentName { get; }
-        protected string ModelName { get; } = modelName;
+        protected string ModelName { get; } = parameters.ApiDeploymentName;
         protected AgentsClient? agentClient;
         protected Agent? agent;
         protected AgentThread? thread;
@@ -25,10 +25,10 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
 
         private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-        const int maxCompletionTokens = 4096;
-        const int maxPromptTokens = 10240;
-        const float temperature = 0.1f;
-        const float topP = 0.1f;
+        const int maxCompletionTokens = 40000;
+        const int maxPromptTokens = 40000;
+        const float temperature = 0.5f;
+        const float topP = 0.9f;
 
         private bool disposeAgent = true;
 
@@ -81,24 +81,21 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
         ];
         }
 
-        public async Task RunAsync(DbContext context)
+        public async Task RunAsync(string agentName, string instructionFilePath)
         {
-            this.context = context;
             await Console.Out.WriteLineAsync("Creating agent...");
             agentClient = Client.GetAgentsClient();
 
             await InitializeAsync(agentClient);
          
-
-
             IEnumerable<ToolDefinition> tools = await SetupTools(Client);
             ToolResources? toolResources = InitializeResources();
 
-            string instructions = await CreateInstructions();
+            string instructions = await CreateInstructions(instructionFilePath);
 
             agent = await agentClient.CreateAgentAsync(
                 model: ModelName,
-                name: AgentName,
+                name: agentName,
                 instructions: instructions,
                 tools: tools,
                 temperature: temperature,
@@ -110,16 +107,13 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                 }
             );
 
-            await Console.Out.WriteLineAsync($"{AgentName} created with ID: {agent.Id}");
-            await Console.Out.WriteLineAsync("{AgentName} ({agent.Id}) Creating thread...");
-
             thread = await agentClient.CreateThreadAsync();
-            await Console.Out.WriteLineAsync($"{AgentName} ({agent.Id}) Thread created with ID: {thread.Id}");
+
+            await Console.Out.WriteLineAsync($"{agentName} created with ID: {agent.Id}");
         }
 
         public async Task<ApiResponse> GetResponseAsync(string prompt, string errorContains = "Error:", [CallerMemberName] string callerName = "")
         {
-            
             await Console.Out.WriteLineAsync($"API Request: {prompt}");
             var response = new ApiResponse
             {
@@ -149,8 +143,8 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                 AsyncCollectionResult<StreamingUpdate> streamingUpdate = agentClient.CreateRunStreamingAsync(
                 threadId: thread.Id,
                 assistantId: agent.Id,
-                //maxCompletionTokens: maxCompletionTokens,
-                //maxPromptTokens: maxPromptTokens,
+                maxCompletionTokens: maxCompletionTokens,
+                maxPromptTokens: maxPromptTokens,
                 temperature: temperature,
                 topP: topP
             );
@@ -166,12 +160,12 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                 response.Message = message.ToString().Contains(errorContains, StringComparison.InvariantCultureIgnoreCase)
                     ? string.Empty
                     : message.ToString();
-                response.Error = string.IsNullOrEmpty(message.ToString())
+                response.Error = string.IsNullOrEmpty(message.ToString().Trim())
                     ? $"Response from agent was empty. Caller: {callerName}"
                     : message.ToString().Contains(errorContains, StringComparison.InvariantCultureIgnoreCase)
                         ? message.ToString()
                         : string.Empty;
-                response.Success = !string.IsNullOrEmpty(message.ToString())
+                response.Success = !string.IsNullOrEmpty(message.ToString().Trim())
                     && !message.ToString().Contains(errorContains, StringComparison.InvariantCultureIgnoreCase);
 
                 return response;
@@ -186,9 +180,9 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
 
         protected virtual ToolResources? InitializeResources() => null;
 
-        protected async virtual Task<string> CreateInstructions()
+        protected async virtual Task<string> CreateInstructions(string path)
         {
-            string instructions = File.ReadAllText(InstructionsFileName);
+            string instructions = File.ReadAllText(path);
 
             if (context is null)
             {
@@ -303,18 +297,25 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                 return;
             }
 
-            if (agentClient is not null)
+            try
             {
-                if (thread is not null)
+                if (agentClient is not null)
                 {
-                    await agentClient.DeleteThreadAsync(thread.Id);
-                }
+                    if (thread is not null)
+                    {
+                        await agentClient.DeleteThreadAsync(thread.Id);
+                    }
 
-                if (agent is not null)
-                {
-                    await agentClient.DeleteAgentAsync(agent.Id);
+                    if (agent is not null)
+                    {
+                        await agentClient.DeleteAgentAsync(agent.Id);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                await Console.Out.WriteLineAsync($"Exception: {ex.Message}");
+            } 
         }
 
         record TariffDatabaseArgs(string query);

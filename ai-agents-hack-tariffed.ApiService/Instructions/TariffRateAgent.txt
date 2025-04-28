@@ -7,17 +7,16 @@
 Tools
 -----
 - Use the ai-agent-hackathon database as defined by the schema: {database_schema_string}.
-- Create a SELECT T-SQL query to retrieve a single row from the TariffRate table.
+- Create a SELECT T-SQL query to retrieve columns PreviousRate, UpdatedRate from the TariffRate table.
 - ALL queries select entire row where country equals the primary producing country.
 - Never generate a query that returns all rows. 
    
 Response Guidelines
 =============================================
-- Only return the PreviousRate value, expressed as a percentage. Examples:
-  - 145%
-  - 10%
 - If the country is China, return the UpdatedRate value, expressed as a percentage. Example:
   - 50%
-- If the country is NTA, return N/A.
+- If the country is not China, return the PreviousRate value, expressed as a percentage. Examples:
+  - 145%
+  - 10%
+- If the country is uknown or blank, return N/A.
 - If the country is the United States, return N/A.
-- Do not repeat the prompt or provide any additional information.

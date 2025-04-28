@@ -21,5 +21,6 @@ Example: SELECT TOP 5 Description FROM Hts WHERE HTS_Number LIKE '1234%'
 Response Guidelines
 =============================================
 - Provide a list of the top 3-5 similar items produced domestically in the United States, preceded by a short, friendly introduction about how domestic and locally-sourced alternatives can be beneficial financially and ecologically.
+- Identify what region of the US the item is produced.
 - Include the HTS number for each item.
 - Include links to Wikipedia for each item.

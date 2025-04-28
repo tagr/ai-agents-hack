@@ -18,7 +18,7 @@ Example: WHERE State = 'South Africa' OR Program LIKE '%South Africa%' OR Progra
 Response Guidelines
 =============================================
 - Return the top 1 applicable trade agreement for the producing country or economic region.
-- Return a key:value pair of trade agreement code and program, like
+- Only return a key:value pair of trade agreement code and program, like
 E:Caribbean Basin Economic Recovery Act
 - If the country is NTA, return No.
 - If the country is the United States, return N/A.

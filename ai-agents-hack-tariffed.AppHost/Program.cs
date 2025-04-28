@@ -19,4 +19,4 @@ builder.AddProject<Projects.ai_agents_hack_tariffed_Web>("webfrontend")
     .WithReference(apiService)
     .WaitFor(apiService);
 
-builder.Build().Run();
+await builder.Build().RunAsync();

@@ -1,13 +1,14 @@
-﻿using Azure.AI.Projects;
+﻿using ai_agents_hack_tariffed.ApiService.Data;
+using Azure.AI.Projects;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ai_agents_hack_tariffed.ApiService.Agents
 {
-    public class HtsLookupAgent(AIProjectClient client, string modelName) 
-        : BaseAgent(client, modelName)
+    public class HtsLookupAgent(IAgentParameters parameters, TariffRateDb context) 
+        : BaseAgent(parameters, context)
     {
-        protected override string AgentName => $"HtsLookupAgent-{DateTime.UtcNow.ToString("yyyy-hhmmss")}";
         protected override string InstructionsFileName => "Instructions\\HtsLookupAgent.txt";
         protected override string Schema => "Hts";
     }
-
 }

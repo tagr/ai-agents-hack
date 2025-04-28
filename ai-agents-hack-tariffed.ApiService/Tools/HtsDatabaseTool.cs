@@ -16,7 +16,7 @@ namespace ai_agents_hack_tariffed.ApiService.Tools
             await using var command = context.Database.GetDbConnection().CreateCommand();
             command.CommandText = @$"
               SELECT * FROM information_schema.columns 
-              WHERE TABLE_NAME = '{schema}'
+              WHERE TABLE_NAME IN ('Hts','Special','TariffRate')
               FOR JSON PATH, ROOT('Schema')
             ";
             command.CommandType = CommandType.Text;

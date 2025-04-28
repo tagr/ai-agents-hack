@@ -1,6 +1,5 @@
 ﻿using ai_agents_hack_tariffed.ApiService;
 using ai_agents_hack_tariffed.ApiService.Data;
-using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 
 namespace ai_agents_hack_tariffed.Web
@@ -28,5 +27,13 @@ namespace ai_agents_hack_tariffed.Web
                 TariffRate = new TariffRate();
             }
         }
+    }
+
+    public class AggregateResponse
+    {
+        public PrimaryProducerApiResponse? PrimaryProducerApiResponse { get; set; }
+        public ApiResponse? TariffRateResponse { get; set; }
+        public ApiResponse? SpecialResponse { get; set; }
+        public ApiResponse? SubstituteResponse { get; set; }
     }
 }

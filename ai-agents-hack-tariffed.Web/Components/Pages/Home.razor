@@ -34,7 +34,7 @@
     </form>
 </div>
 
-<div class="mx-auto mt-4 flex max-w-5xl rounded-lg bg-white px-6 py-8 subpixel-antialiased">
+<div class="mx-auto mt-4 flex max-w-5xl rounded-lg px-6 py-8 subpixel-antialiased">
     <div class="water-round-container @activeClass1 bg-white">
         <div class="inner">
             <div class="water-wave1 bg-gradient-to-r from-@flag1-600 to-@flag1-900"></div>
@@ -57,7 +57,7 @@
         </button>
     </div>
 
-    <div @onclick='() => SetTariffRate(primaryProducer)' class="water-round-container @activeClass2 bg-white cursor-pointer">
+    <div class="water-round-container @activeClass2 bg-white cursor-pointer">
         <div class="inner">
             <div class="round-text">
                 <div class="value mb-6">@tariffRate</div>
@@ -91,7 +91,7 @@
     <div class="water-round-container @activeClass3 bg-white">
         <div class="inner">
             <div class="round-text">
-                <div class="value mb-6">YES</div>
+                <div class="value mb-6">@special</div>
                 <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600">
                 Special Trade Agreements
                 <p class="text-xs font-light leading-2 mt-1">Could qualify for lower duties</p>
@@ -127,7 +127,7 @@
 <div class="error @activeError mx-auto mt-12 max-w-2xl bg-gradient-to-r from-red-500 to-red-400 rounded-lg p-6 transition-opacity border-red-200">
     <strong class="text-4xl block mb-2 text-white">Oops</strong>
     <p class="font-medium text-white">
-        @errorMessage
+        @((MarkupString)errorMessage)
     </p>
     <p class="font-light text-white mt-6">
         <div @onclick='() => search(searchQuery)' href="" class="hover:underline cursor-pointer">
@@ -141,7 +141,8 @@
 </div>
 
 @code {
-    private const uint MAX_TARIFF_RATE_RETRIES = 2;
+    private bool working = false;
+
     private const string ACTIVE_CLASS = "active";
     private const string LOADING_CLASS = "loading";
     private const string FLAG_COLOR = "cyan";
@@ -149,12 +150,13 @@
 
     private string primaryProducer = string.Empty;
     private string tariffRate = string.Empty;
-    private int tariffRateRetries = 0;
     private string activeClass1 = INIT;
     private string activeClass2 = INIT;
     private string activeClass3 = INIT;
 
     private string searchResults = string.Empty;
+
+    private string special = string.Empty;
 
     private string retryActive = string.Empty;
 
@@ -178,121 +180,99 @@
 
     private async Task search(string text)
     {
+        if (working) return;
+        working = true;
+
         if (text.Trim().Length == 0) return;
 
+        activeError = string.Empty;
         searchQuery = text;
-        response = null;
-        SetError(string.Empty);
-        SetProducerDefaults(response);
-        await SetTariffDefaults(null);
-        await SetSubstitutes(text);
+        Loading();
 
-        response = await AgentApi.GetPrimaryProducerAsync(text);
+        var response = await AgentApi.Get(searchQuery);
+        await Task.Delay(100).ContinueWith(_ => { working = false; });
 
+        if (response is null) return;
 
-        SetProducerDefaults(response);
-        await SetTariffRate(response.TariffRate.Country);
+        SetError(response);
+        SetPrimaryProducer(response);
+        SetTariff(response);
+        SetSubstitutes(response);
+        SetSpecial(response);
     }
 
-    private async Task SetTariffRate(string country)
+    private void SetPrimaryProducer(AggregateResponse response)
     {
-        if (string.IsNullOrEmpty(country)) return;
+        if (response.PrimaryProducerApiResponse is null) return;
 
-        retryActive = string.Empty;
-        var tariffResponse = await AgentApi.GetTariffRateAsync(country);
-        await SetTariffDefaults(tariffResponse);
-    }
-
-    private async Task SetSubstitutes(string text)
-    {
-        var subResponse = await AgentApi.GetSubstitutes(text);
-        SetSubstituteDefaults(subResponse);
-    }
-
-    private void SetSubstituteDefaults(ApiResponse? response)
-    {
-        if (response == null)
-        {
-            activeSubstitute = string.Empty;
-            return;
-        }
-        if (!response.Success || string.IsNullOrEmpty(response.Message))
-        {
-            activeSubstitute = string.Empty;
-            SetError("Tariff rate could not be returned.");
-            return;
-        }
-
-        //Success
-        searchResults = response.Message;
-        SetError(string.Empty);
-        activeSubstitute = response.Message;
-    }
-
-    private void SetProducerDefaults(PrimaryProducerApiResponse? response)
-    {
-        if (response == null)
-        {
-            primaryProducer = string.Empty;
-            activeClass1 = LOADING_CLASS;
-            flag1 = FLAG_COLOR;
-            flag2 = FLAG_COLOR;
-            flag3 = FLAG_COLOR;
-            return;
-        }
-
-        primaryProducer = response.TariffRate.Country;
-        flag1 = response.TariffRate.FlagColor1;
-        flag2 = response.TariffRate.FlagColor2;
-        flag3 = response.TariffRate.FlagColor3;
+        primaryProducer = response.PrimaryProducerApiResponse.TariffRate.Country;
+        flag1 = response.PrimaryProducerApiResponse.TariffRate.FlagColor1;
+        flag2 = response.PrimaryProducerApiResponse.TariffRate.FlagColor2;
+        flag3 = response.PrimaryProducerApiResponse.TariffRate.FlagColor3;
         activeClass1 = ACTIVE_CLASS;
     }
 
-    private async Task SetTariffDefaults(ApiResponse? response)
+    private void SetTariff(AggregateResponse response)
     {
-        
-        await Task.Delay(2000);
-        activeClass2 = LOADING_CLASS;
+        if (response.TariffRateResponse is null) return;
 
-        if (response == null)
-        {
-            tariffRate = string.Empty;
-            activeClass2 = activeClass1;
-            SetError(string.Empty);
-            return;
-        }
-
-        if (!response.Success || string.IsNullOrEmpty(response.Message))
-        {
-            tariffRate = string.Empty;
-            activeClass2 = INIT;
-            SetError("Tariff rate could not be returned.");
-            retryActive = ACTIVE_CLASS;
-            return;
-        }
-
-        //Success
-        SetError(string.Empty);
-
-        tariffRate = response.Message;
+        tariffRate = response.TariffRateResponse.Message;
         activeClass2 = ACTIVE_CLASS;
-        tariffRateRetries = 0;
     }
 
-    private void SetError(string message)
+    private void SetSpecial(AggregateResponse response)
     {
-        if (string.IsNullOrEmpty(message))
-        {
-            errorMessage = string.Empty;
-            activeError = string.Empty;
-            retryActive = string.Empty;
-            return;
-        }
+        if (response.SpecialResponse is null) return;
 
-        errorMessage = message;
+        special = response.SpecialResponse.Message;
+        activeClass3 = ACTIVE_CLASS;
+    }
+
+    private void SetSubstitutes(AggregateResponse response)
+    {
+        if (response.SubstituteResponse is null) return;
+
+        searchResults = response.SubstituteResponse.Message;
+        activeSubstitute = string.Empty;
+    }
+
+    private void Loading()
+    {
+        activeClass1 = LOADING_CLASS;
+        activeClass2 = LOADING_CLASS;
+        activeClass3 = LOADING_CLASS;
+        activeSubstitute = "hidden";
+    }
+
+    private void SetError(AggregateResponse response)
+    {
+        if (response.PrimaryProducerApiResponse is null ||
+            response.TariffRateResponse is null ||
+            response.SubstituteResponse is null) return;
+
+        if (response.PrimaryProducerApiResponse.ApiResponse.Success &&
+            response.TariffRateResponse.Success &&
+            response.SubstituteResponse.Success) return;
+
+        var producerErrorMessage = response.PrimaryProducerApiResponse.ApiResponse.Error.Length > 0
+            ? $"Producer: {response.PrimaryProducerApiResponse.ApiResponse.Error}<br>"
+            : string.Empty;
+
+        var tariffErrorMessage = response.TariffRateResponse.Error.Length > 0
+        ? $"Tariff: {response.TariffRateResponse.Error}<br>"
+        : string.Empty;
+
+        var subErrorMessage = response.SubstituteResponse.Error.Length > 0
+        ? $"Substitute Goods: {response.SubstituteResponse.Error}<br>"
+        : string.Empty;
+
+        errorMessage = $@"
+            {producerErrorMessage}
+            {tariffErrorMessage}
+            {subErrorMessage}
+        ";
         activeError = ACTIVE_CLASS;
     }
 }
-
 
 <div class="text-center pt-4 w-full text-sm">Made with 🤍 by Andy Merhaut</div>
