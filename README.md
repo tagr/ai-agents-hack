@@ -26,4 +26,20 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 * 🟣 [.NET Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview)
 * 🟣 [Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor)
 * 🟣 SQL Server 2022
+* 🟣 Visual Studio 2022
+* 🟣 [Azure CLI 2.71](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows?pivots=msi)
 * 🐋 [Docker Desktop 4.40](https://docs.docker.com/desktop/release-notes/#4400)
+
+### Prerequisites
+* An active Azure subscription
+* A Resource Group to host Azure AI Services
+* A project created in Azure [AI Foundry](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/create-projects?tabs=ai-studio)
+  * Keep the project connection string for use in the following setup procedure
+* Grounding with Bing Search resource provisioned in the resource group and [connected](https://learn.microsoft.com/en-us/azure/ai-services/agents/how-to/tools/bing-grounding?tabs=python&pivots=overview) to the Azure AI project
+  * Also keep the connection name for this handy 
+
+### Setup
+* Update `ai-agents-hack-tariffed.AppHost/Properties/launchSettings.json` and modify the `BING_GROUNDING_CONNECTION_NAME` value with your value.
+* Update `ai-agents-hack-tariffed.ApiService\appsettings.json` and modify the `AiAgentService` value with the AI Foundry project connection string
+
+
