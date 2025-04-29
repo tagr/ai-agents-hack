@@ -19,6 +19,15 @@ This problem, and the dizzying pace of news about trade wars and supply chain di
 ### Author
 Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 
+### Project Video
+* TODO
+
+### Samples
+* TODO
+
+### Architecture
+* TODO
+
 ### Technologies Applied
 * 🤖 [Azure AI Agent Service](https://learn.microsoft.com/en-us/azure/ai-services/agents/overview)
 * 👀 [Grounding with Bing Search](https://learn.microsoft.com/en-us/azure/ai-services/agents/how-to/tools/bing-grounding?tabs=python&pivots=overview)
@@ -52,12 +61,6 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 > I recommend logging into the database using the *ConnectionStrings__ai-agent-hackathon*
 > environment variable as "Additional Connection Properties" in SQL Server Management Studio and running a `SELECT` statement on one of the tables every few minutes, or
 > until the `ApiService` logs show an entry, "✅ SQL initialization complete."
-
-### Architecture
-
-### Samples
-
-### Project Video
 
 ### Acknowledgements
 * ♥️ My family (again)
