@@ -75,8 +75,15 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 > The procedure creates tables and populates them, which takes some time (10+ minutes).
 >
 > I recommend logging into the database using the *ConnectionStrings__ai-agent-hackathon*
-> environment variable as "Additional Connection Properties" in SQL Server Management Studio and running a `SELECT` statement on one of the tables every few minutes, or
+> environment variable (Fig. 1) as "Additional Connection Properties" in SQL Server Management Studio (Fig. 2) and running a `SELECT` statement on one of the tables every few minutes, or
 > until the `ApiService` logs show an entry, "✅ SQL initialization complete."
+
+![connectionstring](https://github.com/user-attachments/assets/5f5762ed-8cac-4ceb-b57d-2d29221cdacf)
+*Figure 1. Getting the SQL connection string from the ApiService's environment variables*
+
+![ssms](https://github.com/user-attachments/assets/ca20eca9-1123-4a1d-9fbf-c1be019c11b5)
+*Figure 2. Using that connection string in SSMS*
+
 
 ### Acknowledgements
 * ♥️ My family (again)
