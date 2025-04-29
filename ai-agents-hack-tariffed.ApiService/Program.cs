@@ -4,14 +4,9 @@ using ai_agents_hack_tariffed.ApiService.Data;
 using ai_agents_hack_tariffed.ApiService.Tools;
 using Azure.AI.Projects;
 using Azure.Identity;
-using k8s.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.SqlServer;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using System;
-using System.Text;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,31 +38,15 @@ builder.Services.AddScoped<IAgentParameters>(x =>
         projectClient,
         apiDeploymentName));
 
-builder.Services.AddScoped<PrimaryProducerAgent>();
-//builder.Services.AddScoped<HtsLookupAgent>();
-//builder.Services.AddScoped<TariffRateAgent>();
-//builder.Services.AddScoped<SpecialAgent>();
+builder.Services.AddScoped<TariffAgent>();
 
 var app = builder.Build();
 
 //Initialize agents
 
 using var scope = app.Services.CreateScope();
-//var tariffDbContext = scope.ServiceProvider.GetRequiredService<TariffRateDb>();
-//await using PrimaryProducerAgent ppAgent = app.Services.GetKeyedService<PrimaryProducerAgent>("primaryProducerAgent") //new(projectClient, apiDeploymentName);
-//await using HtsLookupAgent htsAgent = new(projectClient, apiDeploymentName);
-//await using TariffRateAgent tAgent = new(projectClient, apiDeploymentName);
-//await using SpecialAgent sAgent = new(projectClient, apiDeploymentName);
+var agent = scope.ServiceProvider.GetRequiredService<TariffAgent>();
 
-var ppAgent = scope.ServiceProvider.GetRequiredService<PrimaryProducerAgent>();
-//var htsAgent = scope.ServiceProvider.GetRequiredService<HtsLookupAgent>();
-//var tAgent = scope.ServiceProvider.GetRequiredService<TariffRateAgent>();
-//var sAgent = scope.ServiceProvider.GetRequiredService<SpecialAgent>();
-
-
-//if (htsAgent != null) await htsAgent.RunAsync();
-//if (tAgent != null) await tAgent.RunAsync();
-//if (sAgent != null) await sAgent.RunAsync();
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
@@ -126,6 +105,7 @@ ToolConnectionList connectionList = new()
 {
     ConnectionList = { new ToolConnection(connectionId) }
 };
+
 BingGroundingToolDefinition bingGroundingTool = new(connectionList);
 
 #endregion
@@ -139,10 +119,10 @@ app.MapPost("/producer/{search}", async ([FromRoute] string search, TariffRateDb
         Success = false
     };
 
-    await ppAgent.RunAsync("PrimaryProducerAgent", "Instructions\\PrimaryProducerAgent.txt", [queryTool]);
-    await ppAgent.GetResponseAsync(search);
+    await agent.RunAsync("PrimaryProducerAgent", "Instructions\\PrimaryProducerAgent.txt", [queryTool]);
+    await agent.GetResponseAsync(search);
 
-    var output = ppAgent.OutputBuilder.ToString();
+    var output = agent.OutputBuilder.ToString();
 
     var tr = await db.TariffRates.FirstOrDefaultAsync(t => t.Country == output);
 
@@ -153,9 +133,8 @@ app.MapPost("/producer/{search}", async ([FromRoute] string search, TariffRateDb
         Success = true
     };
 
-    await ppAgent.DisposeAsync();
+    await agent.DisposeAsync();
     return returnValue;
-
 });
 
 //Returns the tariff rate given a producing country. Should use tools to query the database.
@@ -169,23 +148,6 @@ app.MapPost("/tariff/{search}", async ([FromRoute] string search, TariffRateDb d
     var value = await db.TariffRates.FirstOrDefaultAsync(t => t.Country == search);
 
     response.Message = value?.PreviousRate.ToString() ?? string.Empty;
-
-    //await ppAgent.RunAsync("TariffAgent", "Instructions\\TariffRateAgent.txt", [queryTool]);
-
-    //var prompt = $"Return the tariff rate for {search}?";
-    //var response = await ppAgent.GetResponseAsync(prompt, ".");
-
-    //if (response.Message.Contains("Rate limit", StringComparison.InvariantCultureIgnoreCase))
-    //{
-    //    response.Error = response.Message;
-    //    response.Message = string.Empty;
-    //}
-    //else
-    //{
-    //    response.Success = true;
-    //}
-
-    await ppAgent.DisposeAsync();
     response.Success = true;
     return response;
 });
@@ -193,12 +155,12 @@ app.MapPost("/tariff/{search}", async ([FromRoute] string search, TariffRateDb d
 //Queries a nation's percent of overall trade with the United States.
 app.MapPost("/percent/{search}", async ([FromRoute] string search, TariffRateDb db) =>
 {
-    await ppAgent.RunAsync("SpecialAgent", "Instructions\\SpecialAgent.txt", []);
+    await agent.RunAsync("SpecialAgent", "Instructions\\SpecialAgent.txt", []);
 
     var prompt = $"Create a query to return the percent of trade for {search}.";
-    await ppAgent.GetResponseAsync(prompt);
+    await agent.GetResponseAsync(prompt);
 
-    var output = ppAgent.OutputBuilder.ToString();
+    var output = agent.OutputBuilder.ToString();
 
     var response = new ApiResponse
     {
@@ -216,7 +178,7 @@ app.MapPost("/percent/{search}", async ([FromRoute] string search, TariffRateDb 
         response.Message = string.Empty;
     }
 
-    await ppAgent.DisposeAsync();
+    await agent.DisposeAsync();
     response.Success = true;
     return response;
 });
@@ -224,13 +186,12 @@ app.MapPost("/percent/{search}", async ([FromRoute] string search, TariffRateDb 
 //Returns the best matching Harmonized tariff schedule number for a particular good.
 app.MapPost("/hts/{search}", async ([FromRoute] string search) =>
 {
-    await ppAgent.RunAsync("HtsAgent", "Instructions\\HtsLookupAgent.txt", [queryAllTool, bingGroundingTool], "'Hts'");
+    await agent.RunAsync("HtsAgent", "Instructions\\HtsLookupAgent.txt", [queryAllTool, bingGroundingTool], "'Hts'");
 
     var prompt = $"Find substitute goods for {search} produced in the US.";
-    await ppAgent.GetResponseAsync(prompt);
+    await agent.GetResponseAsync(prompt);
 
-    var output = ppAgent.OutputBuilder.ToString();
-
+    var output = agent.OutputBuilder.ToString();
 
     var response = new ApiResponse
     {
@@ -238,7 +199,7 @@ app.MapPost("/hts/{search}", async ([FromRoute] string search) =>
         Success = output.Length > 0
     };
 
-    await ppAgent.DisposeAsync();
+    await agent.DisposeAsync();
     return response;
 });
 

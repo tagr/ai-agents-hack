@@ -17,6 +17,23 @@
 <body class="bg-white dark:bg-gray-800">
     <Routes />
     <script src="_framework/blazor.web.js"></script>
+
+    <script>
+
+        //Watch for resize events to animate the background image
+        const body = document.querySelector("body");
+
+        const resizeObserver = new ResizeObserver((entries) => {
+          requestAnimationFrame(() => {
+            for (const entry of entries) {
+              entry.target.classList.toggle("resized");
+              break;
+            }
+          });
+        });
+
+        resizeObserver.observe(body);
+    </script>
 </body>
 
 </html>

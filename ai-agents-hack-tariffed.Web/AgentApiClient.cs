@@ -12,7 +12,7 @@ namespace ai_agents_hack_tariffed.Web
     public class AgentApiClient(HttpClient httpClient, [FromServices] IMemoryCache memoryCache)
     {
         private const uint MemoryCacheExpirationInSeconds = uint.MaxValue;
-        public async Task<PrimaryProducerApiResponse?> GetPrimaryProducerAsync(string search)
+        private async Task<PrimaryProducerApiResponse?> GetPrimaryProducerAsync(string search)
         {
             var response = await httpClient.PostAsync($"/producer/{search}", null);
 
@@ -29,7 +29,7 @@ namespace ai_agents_hack_tariffed.Web
             return returnValue;
         }
 
-        public async Task<ApiResponse?> GetTariffRateAsync(string search)
+        private async Task<ApiResponse?> GetTariffRateAsync(string search)
         {
             var response = await httpClient.PostAsync($"/tariff/{search}", null);
 
@@ -59,7 +59,7 @@ namespace ai_agents_hack_tariffed.Web
             return result;
         }
 
-        public async Task<PercentOfTradeResponse?> GetPercentOfTradeAsync(string search)
+        private async Task<PercentOfTradeResponse?> GetPercentOfTradeAsync(string search)
         {
             var response = await httpClient.PostAsync($"/percent/{search}", null);
 
@@ -73,70 +73,60 @@ namespace ai_agents_hack_tariffed.Web
             return returnValue;
         }
 
-        public async Task<ApiResponse?> GetSubstitutes(string search)
+        private async Task<ApiResponse?> GetSubstitutes(string search)
         {
-            //if (!memoryCache.TryGetValue($"sub-{search}", out ApiResponse? value))
-            //{
-                var response = await httpClient.PostAsync($"/hts/{search}", null);
+            var response = await httpClient.PostAsync($"/hts/{search}", null);
 
-                var json = await response.Content.ReadAsStringAsync();
-                await Console.Out.WriteLineAsync($"{json}");
+            var json = await response.Content.ReadAsStringAsync();
+            await Console.Out.WriteLineAsync($"{json}");
 
-                var result = JsonConvert.DeserializeObject<ApiResponse>(json);
-                if (result == null)
-                {
-                    return new ApiResponse();
-                }
+            var result = JsonConvert.DeserializeObject<ApiResponse>(json);
+            if (result == null)
+            {
+                return new ApiResponse();
+            }
 
             return result;
-
-                //if (result.Success)
-                //{
-                //    var cacheEntryOptions = new MemoryCacheEntryOptions()
-                //    .SetSlidingExpiration(TimeSpan.FromSeconds(MemoryCacheExpirationInSeconds));
-
-                //    memoryCache.Set($"sub-{search}", result, cacheEntryOptions);
-
-                //    return result;
-                //} 
-            //}
-            //else
-            //{
-            //    return value;
-            //}
-
-            //return new ApiResponse();
         }
 
         public async Task<AggregateResponse> Get(string search)
         {
-            //if (!memoryCache.TryGetValue($"get-{search}", out AggregateResponse? value))
-            //{
+            if (!memoryCache.TryGetValue($"{search}", out AggregateResponse? value))
+            {
                 var returnValue = new AggregateResponse
-                {
-                    PrimaryProducerApiResponse = await GetPrimaryProducerAsync(search),
-                    
-                };
+            {
+                PrimaryProducerApiResponse = await GetPrimaryProducerAsync(search),
+                SubstituteResponse = await GetSubstitutes(search)
+            };
 
-                returnValue.SubstituteResponse = await GetSubstitutes(search);
-
-                returnValue.PercentOfTradeResponse = await GetPercentOfTradeAsync(
+                    returnValue.PercentOfTradeResponse = await GetPercentOfTradeAsync(
                     returnValue.PrimaryProducerApiResponse.TariffRate.Country);
 
                 returnValue.TariffRateResponse = await GetTariffRateAsync(
                     returnValue.PrimaryProducerApiResponse.TariffRate.Country);
 
-                //var cacheEntryOptions = new MemoryCacheEntryOptions()
-                //.SetSlidingExpiration(TimeSpan.FromSeconds(MemoryCacheExpirationInSeconds));
+                if (returnValue.PrimaryProducerApiResponse != null &&
+                    returnValue.SubstituteResponse != null &&
+                    returnValue.PercentOfTradeResponse != null &&
+                    returnValue.TariffRateResponse != null &&
+                    returnValue.PrimaryProducerApiResponse.ApiResponse.Success &&
+                    returnValue.SubstituteResponse.Success &&
+                    returnValue.PercentOfTradeResponse.ApiResponse.Success &&
+                    returnValue.TariffRateResponse.Success
+                    )
+                {
+                    var cacheEntryOptions = new MemoryCacheEntryOptions()
+                        .SetSlidingExpiration(TimeSpan.FromSeconds(MemoryCacheExpirationInSeconds));
 
-                //memoryCache.Set($"get-{search}", returnValue, cacheEntryOptions);
-
-                 return returnValue;
-            //}
-            //else
-            //{
-            //    return value;
-            //}
+                    memoryCache.Set($"{search}", returnValue, cacheEntryOptions);
+                }
+                
+                return returnValue;
+            }
+            else
+            {
+                return value;
+            }
         }
     }
 }

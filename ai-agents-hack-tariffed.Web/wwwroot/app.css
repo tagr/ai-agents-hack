@@ -13,7 +13,37 @@ html {
 
 }
 
-/*https://play.tailwindcss.com/jauYBOzBd6*/
+body {
+    background: url(bg0.jpg) no-repeat top;
+    background-size: auto 100%;
+    transition: all 1s;
+}
+
+body.resized {
+    background-size: auto 120%;
+}
+
+.header {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 0 0 2rem 2rem;
+}
+
+.whatshappening {
+    background: rgba(0,0,0,0);
+    max-height: 0;
+    opacity: 0;
+    padding: unset;
+    transition: max-height linear 1s, opacity ease-in-out 3s;
+    visibility: hidden;
+}
+
+.whatshappening.loading {
+    background: rgba(0,0,0,0.8);
+    max-height: 500px;
+    opacity: 100%;
+    padding: revert-layer;
+    visibility: visible;
+}
 
 .water-round-container {
     margin: 0 auto;

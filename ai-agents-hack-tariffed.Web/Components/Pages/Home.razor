@@ -9,7 +9,7 @@
 
 <PageTitle>TARIFFED! AI Agents Hackathon 2025</PageTitle>
 
-<div class="relative overflow-auto bg-clip-text">
+<div class="header relative overflow-auto bg-clip-text">
   <div class="mx-auto flex flex-col font-bold font-sans">
     <h1 class="text-8xl flex items-center justify-center bg-gradient-to-r from-cyan-300 to-blue-800 bg-clip-text text-transparent tracking-tighter">
       Tariffed
@@ -19,7 +19,7 @@
   
 </div>
 
-<div class="mx-auto mt-12 flex max-w-2xl h-12 items-center overflow-hidden rounded-lg bg-white shadow-sm">
+<div class="mx-auto mt-12 flex max-w-2xl h-12 items-center overflow-hidden rounded-lg bg-white shadow-lg/30">
     <div class="grid h-full w-12 place-items-center text-gray-400">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -32,6 +32,37 @@
                 id="search"
                 placeholder="See if your favorite stuff just got more expensive" />
     </form>
+</div>
+
+<div class="suggestions @suggestions mx-auto mx-auto grid grid-cols-3 grid-rows-1 gap-4 max-w-2xl max-w-2xl pt-6">
+    <button @onclick='() => search("silk")' class="bg-teal-300 hover:bg-teal-400 text-gray-800 font-bold py-2 px-4 shadow-sm/50 rounded-md inline-flex items-center cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"></path></svg>
+
+        <span>Search 'silk'</span>
+    </button>
+
+    <button @onclick='() => search("Brie cheese")' class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+        </svg>
+
+        <span>Brie cheese</span>
+    </button>
+
+    <button @onclick='() => search("Copic markers")' class="bg-purple-300 hover:bg-purple-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+        </svg>
+
+        <span>Copic markers</span>
+    </button>
+</div>
+
+<div class="whatshappening @activeClassHappening mx-auto max-w-5xl mt-8 p-12 text-center">
+    <h3 class="mx auto text-3xl text-white mb-6">
+        What's happening?
+    </h3>
+    <img src="whatshappening.png" class="" alt="A diagram displaying how the AI agents work">
 </div>
 
 <div class="mx-auto mt-4 flex max-w-5xl rounded-lg px-6 py-8 subpixel-antialiased">
@@ -57,7 +88,7 @@
         </button>
     </div>
 
-    <div class="water-round-container @activeClass2 bg-white cursor-pointer">
+    <div class="water-round-container @activeClass2 bg-white">
         <div class="inner">
             <div class="round-text">
                 <div class="value mb-6">@tariffRate</div>
@@ -77,15 +108,6 @@
             </svg>
             Agent Working
         </button>
-
-        <div class="retry @retryActive mt-20 inline-flex items-center rounded-md bg-red-600
-            px-4 py-2 text-sm leading-6 font-semibold text-white transition duration-150 ease-in-out hover:bg-red-700 cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-
-            &nbsp;Retry
-        </div>
     </div>
 
     <div class="water-round-container @activeClass3 bg-white">
@@ -113,7 +135,7 @@
 </div>
 
 @* Substitute Goods *@
-<div class="substitute @activeSubstitute mx-auto mt-12 max-w-2xl bg-gradient-to-r from-cyan-700 to-cyan-500 p-4 rounded-xl transition-opacity ">
+<div class="substitute @activeSubstitute mx-auto mt-12 max-w-2xl bg-gradient-to-r from-cyan-700 to-cyan-500 p-4 rounded-xl transition-opacity shadow-lg/50">
     <h3 class="text-4xl block font-normal text-white">Substitute Goods</h3>
     <p class="text-xs text-white">
         Powered by <strong>Grounding with Bing Search</strong>
@@ -143,7 +165,7 @@
 @code {
     private bool working = false;
 
-    private const string ACTIVE_CLASS = "active";
+    private const string ACTIVE_CLASS = "active shadow-lg/50";
     private const string LOADING_CLASS = "loading";
     private const string FLAG_COLOR = "cyan";
     private const string INIT = "init";
@@ -153,12 +175,13 @@
     private string activeClass1 = INIT;
     private string activeClass2 = INIT;
     private string activeClass3 = INIT;
+    private string activeClassHappening = string.Empty;
 
     private string searchResults = string.Empty;
 
     private string percentOfTrade = string.Empty;
 
-    private string retryActive = string.Empty;
+    private string suggestions = string.Empty;
 
     private string errorMessage = string.Empty;
     private string activeError = string.Empty;
@@ -244,6 +267,8 @@
         activeClass2 = LOADING_CLASS;
         activeClass3 = LOADING_CLASS;
         activeSubstitute = "hidden";
+        activeClassHappening = LOADING_CLASS;
+        suggestions = "hidden";
     }
 
     private void SetError(AggregateResponse response)
@@ -267,6 +292,8 @@
         var subErrorMessage = response.SubstituteResponse?.Error.Length > 0
         ? $"Substitute Goods: {response.SubstituteResponse.Error} ({response.SubstituteResponse.ThreadId})<br>"
         : string.Empty;
+
+        activeClassHappening = string.Empty;
 
         errorMessage = $@"
             {producerErrorMessage}

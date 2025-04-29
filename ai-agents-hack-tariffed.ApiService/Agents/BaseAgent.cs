@@ -1,14 +1,11 @@
 ﻿using ai_agents_hack_tariffed.ApiService.Data;
 using ai_agents_hack_tariffed.ApiService.Tools;
 using Azure.AI.Projects;
-using Grpc.Core;
-using k8s.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.ClientModel;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Json;
 
 namespace ai_agents_hack_tariffed.ApiService.Agents
 {
@@ -22,14 +19,12 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
         protected Agent? agent;
         protected AgentThread? thread;
 
-
         const int maxCompletionTokens = 20000;
         const int maxPromptTokens = 10240;
         const float temperature = 0.1f;
         const float topP = 0.3f;
 
-
-        private bool disposeAgent = true;
+        private readonly bool disposeAgent = true;
 
         public virtual IEnumerable<ToolDefinition> InitializeTools() => [];
 
@@ -61,81 +56,37 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
         public async Task GetResponseAsync(string prompt, string errorContains = "Error:", [CallerMemberName] string callerName = "")
         {
             await Console.Out.WriteLineAsync($"API Request: {prompt}");
-            //var response = new ApiResponse
-            //{
-            //    Success = false
-            //};
 
-            //if (agentClient == null || agent == null)
-            //{
-            //    response.Error = "Agent request was made before initialized";
-            //    return response;
-            //}
+            this.thread = await agentClient.CreateThreadAsync();
 
-            //if (string.IsNullOrEmpty(prompt) || string.IsNullOrWhiteSpace(prompt))
-            //{
-            //    response.Error = "Request was empty";
-            //    return response;
-            //}
+            _ = await agentClient.CreateMessageAsync(
+                threadId: thread.Id,
+                role: MessageRole.User,
+                content: prompt
+            );
 
+            AsyncCollectionResult<StreamingUpdate> streamingUpdate = agentClient.CreateRunStreamingAsync(
+                threadId: thread.Id,
+                assistantId: agent.Id,
+                maxCompletionTokens: maxCompletionTokens,
+                maxPromptTokens: maxPromptTokens,
+                temperature: temperature,
+                topP: topP
+            );
 
-                this.thread = await agentClient.CreateThreadAsync();
-
-                var threadMessage = await agentClient.CreateMessageAsync(
-                    threadId: thread.Id,
-                    role: MessageRole.User,
-                    content: prompt
-                );
-
-                AsyncCollectionResult<StreamingUpdate> streamingUpdate = agentClient.CreateRunStreamingAsync(
-                    threadId: thread.Id,
-                    assistantId: agent.Id,
-                    maxCompletionTokens: maxCompletionTokens,
-                    maxPromptTokens: maxPromptTokens,
-                    temperature: temperature,
-                    topP: topP
-                );
-
-
-                var m = string.Empty;
-                
-                await foreach (StreamingUpdate update in streamingUpdate)
-                {
-                    m = await HandleStreamingUpdateAsync(update);
-                    OutputBuilder.Append(m);
-
-                    if (m.Length > 0) break;
+            await foreach (StreamingUpdate update in streamingUpdate)
+            {
+                string? m = await HandleStreamingUpdateAsync(update);
+                OutputBuilder.Append(m);
+                if (m.Length > 0) break;
             }
-
-                //Build response
-                //response.Message = message.ToString().Contains(errorContains, StringComparison.InvariantCultureIgnoreCase)
-                //    ? string.Empty
-                //    : message.ToString();
-                //response.Error = string.IsNullOrEmpty(message.ToString().Trim())
-                //    ? $"Response from agent was empty. Caller: {callerName}"
-                //    : message.ToString().Contains(errorContains, StringComparison.InvariantCultureIgnoreCase)
-                //        ? message.ToString()
-                //        : string.Empty;
-                //response.Success = !string.IsNullOrEmpty(message.ToString().Trim())
-                //    && !message.ToString().Contains(errorContains, StringComparison.InvariantCultureIgnoreCase);
-
-                //var concat = message.ToString();
-
-                //response.Message = concat.Contains("Error:") ? string.Empty : concat;
-                //response.Error = concat.Contains("Error:") ? concat : string.Empty;
-                //response.Success = !concat.Contains("Error:") && !string.IsNullOrEmpty(concat);
-                //response.ThreadId = thread.Id;
-
-                //return response;
-
-            //}
         }
 
         protected virtual ToolResources? InitializeResources() => null;
 
         protected async virtual Task<string> CreateInstructions(string path, string entities = "'Hts','Special','TariffRate'")
         {
-            string instructions = File.ReadAllText(path);
+            string instructions = await File.ReadAllTextAsync(path);
 
             if (context is null)
             {
@@ -163,12 +114,6 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                     await HandleActionAsync(requiredActionUpdate);
                     break;
 
-                //case StreamingUpdateReason.MessageUpdated:
-                //    // The agent has a response to the user, potentially requiring some user input
-                //    // or further action. This comes as a stream of message content updates.
-                //    MessageContentUpdate messageContentUpdate = (MessageContentUpdate)update;
-                //    return messageContentUpdate.Text;
-
                 case StreamingUpdateReason.MessageCompleted:
                     MessageStatusUpdate messageStatusUpdate = (MessageStatusUpdate)update;
                     ThreadMessage tm = messageStatusUpdate.Value;
@@ -177,55 +122,17 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
 
                     foreach (MessageContent contentItem in contentItems)
                     {
-                        if (contentItem is MessageTextContent c1)
+                        if (contentItem is MessageTextContent content)
                         {
-                            var ct = c1.Text;
-                            message = ct;
+                            var text = content.Text;
+                            message = text;
                             break;
                         }
                     }
                     break;
-
-                    //case StreamingUpdateReason.RunCompleted:
-                    //    await Console.Out.WriteLineAsync();
-                    //    break;
-
-                    //case StreamingUpdateReason.RunFailed:
-                    //    // The run failed, so we can print the error message.
-                    //    RunUpdate runFailedUpdate = (RunUpdate)update;
-
-                    //    if (runFailedUpdate.Value.LastError.Code == "rate_limit_exceeded")
-                    //    {
-                    //        return runFailedUpdate.Value.LastError.Message;
-                    //    }
-
-                    //    message = $"Error: {runFailedUpdate.Value.LastError.Message} (code: {runFailedUpdate.Value.LastError.Code})";
-                    //    break;
             }
 
             return message;
-        }
-
-        private async Task DownloadImageFileContentAsync(MessageImageFileContent imageContent)
-        {
-            if (agentClient is null)
-            {
-                return;
-            }
-
-            Utils.LogGreen($"Getting file with ID: {imageContent.FileId}");
-
-            BinaryData fileContent = await agentClient.GetFileContentAsync(imageContent.FileId);
-            string directory = Path.Combine("files");
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            string filePath = Path.Combine(directory, imageContent.FileId + ".png");
-            await File.WriteAllBytesAsync(filePath, fileContent.ToArray());
-
-            Utils.LogGreen($"File save to {Path.GetFullPath(filePath)}");
         }
 
         protected virtual AsyncCollectionResult<StreamingUpdate> HandleRequiredAction(RequiredActionUpdate requiredActionUpdate) =>
@@ -233,11 +140,6 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
 
         private async Task HandleActionAsync(RequiredActionUpdate requiredActionUpdate)
         {
-            //if (agentClient is null)
-            //{
-            //    return;
-            //}
-
             AsyncCollectionResult<StreamingUpdate> toolUpdate;
 
             if (requiredActionUpdate.FunctionName != nameof(HtsDatabaseTool.Query) &&
@@ -280,7 +182,6 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
                 OutputBuilder.Append(await HandleStreamingUpdateAsync(update));
             }
         }
-
         public async ValueTask DisposeAsync()
         {
             if (!disposeAgent)
@@ -312,4 +213,3 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
         record TariffDatabaseArgs(string query);
     }
 }
-
