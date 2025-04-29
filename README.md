@@ -42,6 +42,13 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 * Update `ai-agents-hack-tariffed.AppHost/Properties/launchSettings.json` and modify the `BING_GROUNDING_CONNECTION_NAME` value with your value.
 * Update `ai-agents-hack-tariffed.ApiService\appsettings.json` and modify the `AiAgentService` value with the AI Foundry project connection string
 
+> **⚠️ IMPORTANT ⚠️**
+> The first time you run the solution, `AppHost` project bootstraps the `ai-agent-hackathon` SQL Server database and migration script `init.sql`. 
+> Then the `ApiService` starts a background process (instance of `ScopedProcessingService`), which executes stored procedure from that SQL script, `[spSeedHts]`
+> The procedure creates tables and populates them, which takes some time (10+ minutes). I recommend logging into the database using the *ConnectionStrings__ai-agent-hackathon*
+> environment variable as "Additional Connection Properties" in SQL Server Management Studio and running a `SELECT` statement on one of the tables every few minutes, or
+> until the `ApiService` logs show an entry, "✅ SQL initialization complete."
+
 ### Architecture
 
 ### Samples
@@ -49,5 +56,5 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 ### Project Video
 
 ### Acknowledgements
-* My family (again)
-* Aaron Powell's livestream [Build your code-first app with Azure AI Agent Service (.NET)](https://developer.microsoft.com/en-us/reactor/events/25370/). These examples were critical to my understanding of the Azure AI Agent Service
+* ♥️ My family (again)
+* 🤖 Aaron Powell's livestream [Build your code-first app with Azure AI Agent Service (.NET)](https://developer.microsoft.com/en-us/reactor/events/25370/). These examples were critical to my understanding of the Azure AI Agent Service
