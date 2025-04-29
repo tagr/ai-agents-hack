@@ -72,7 +72,7 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 > The first time you run the solution, `AppHost` project bootstraps the `ai-agent-hackathon` SQL Server database and migration script `init.sql`.
 > 
 > Then the `ApiService` starts a background process (instance of `ScopedProcessingService`), which executes stored procedure from that SQL script, `[spSeedHts]`
-> The procedure creates tables and populates them, which takes some time (10+ minutes).
+> The procedure creates tables and populates them, which takes some time (15+ minutes).
 >
 > I recommend logging into the database using the *ConnectionStrings__ai-agent-hackathon*
 > environment variable (Fig. 1) as "Additional Connection Properties" in SQL Server Management Studio (Fig. 2) and running a `SELECT` statement on one of the tables every few minutes, or
@@ -83,6 +83,8 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 
 ![ssms](https://github.com/user-attachments/assets/ca20eca9-1123-4a1d-9fbf-c1be019c11b5)
 *Figure 2. Using that connection string in SSMS*
+
+![ssms](https://github.com/user-attachments/assets/88b97594-03ac-4384-996a-e8c88123a079)
 
 
 ### Acknowledgements
