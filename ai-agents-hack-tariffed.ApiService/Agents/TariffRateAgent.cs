@@ -7,7 +7,5 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
     public class TariffRateAgent(IAgentParameters parameters, TariffRateDb context) 
         : BaseAgent(parameters, context)
     {
-        protected override string InstructionsFileName => "Instructions\\TariffRateAgent.txt";
-        protected override string Schema => "TariffRate";
     }
 }

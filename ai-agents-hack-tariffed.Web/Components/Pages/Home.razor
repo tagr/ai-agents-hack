@@ -91,10 +91,10 @@
     <div class="water-round-container @activeClass3 bg-white">
         <div class="inner">
             <div class="round-text">
-                <div class="value mb-6">@special</div>
+                <div class="value mb-6">@percentOfTrade</div>
                 <div class="text-white text-lg font-bold pt-2 pb-4 bg-purple-600">
-                Special Trade Agreements
-                <p class="text-xs font-light leading-2 mt-1">Could qualify for lower duties</p>
+                Percent of Trade
+                <p class="text-xs font-light leading-2 mt-1">Larger partners affect your wallet</p>
         
                 </div>
             </div>
@@ -156,7 +156,7 @@
 
     private string searchResults = string.Empty;
 
-    private string special = string.Empty;
+    private string percentOfTrade = string.Empty;
 
     private string retryActive = string.Empty;
 
@@ -190,6 +190,8 @@
         Loading();
 
         var response = await AgentApi.Get(searchQuery);
+
+
         await Task.Delay(100).ContinueWith(_ => { working = false; });
 
         if (response is null) return;
@@ -222,9 +224,9 @@
 
     private void SetSpecial(AggregateResponse response)
     {
-        if (response.SpecialResponse is null) return;
+        if (response.PercentOfTradeResponse is null) return;
 
-        special = response.SpecialResponse.Message;
+        percentOfTrade = response.PercentOfTradeResponse.Record.PercentOfTrade;
         activeClass3 = ACTIVE_CLASS;
     }
 
@@ -250,20 +252,20 @@
             response.TariffRateResponse is null ||
             response.SubstituteResponse is null) return;
 
-        if (response.PrimaryProducerApiResponse.ApiResponse.Success &&
+        if (!(response.PrimaryProducerApiResponse.ApiResponse.Success &&
             response.TariffRateResponse.Success &&
-            response.SubstituteResponse.Success) return;
+            response.SubstituteResponse.Success)) activeError = ACTIVE_CLASS;
 
-        var producerErrorMessage = response.PrimaryProducerApiResponse.ApiResponse.Error.Length > 0
-            ? $"Producer: {response.PrimaryProducerApiResponse.ApiResponse.Error}<br>"
+        var producerErrorMessage = response.PrimaryProducerApiResponse?.ApiResponse.Error.Length > 0
+            ? $"Producer: {response.PrimaryProducerApiResponse.ApiResponse.Error} ({response.PrimaryProducerApiResponse.ApiResponse.ThreadId})<br>"
             : string.Empty;
 
-        var tariffErrorMessage = response.TariffRateResponse.Error.Length > 0
-        ? $"Tariff: {response.TariffRateResponse.Error}<br>"
+        var tariffErrorMessage = response.TariffRateResponse?.Error.Length > 0
+        ? $"Tariff: {response.TariffRateResponse.Error} ({response.TariffRateResponse.ThreadId})<br>"
         : string.Empty;
 
-        var subErrorMessage = response.SubstituteResponse.Error.Length > 0
-        ? $"Substitute Goods: {response.SubstituteResponse.Error}<br>"
+        var subErrorMessage = response.SubstituteResponse?.Error.Length > 0
+        ? $"Substitute Goods: {response.SubstituteResponse.Error} ({response.SubstituteResponse.ThreadId})<br>"
         : string.Empty;
 
         errorMessage = $@"
@@ -271,7 +273,7 @@
             {tariffErrorMessage}
             {subErrorMessage}
         ";
-        activeError = ACTIVE_CLASS;
+        
     }
 }
 

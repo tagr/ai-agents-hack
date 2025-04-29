@@ -29,11 +29,41 @@ namespace ai_agents_hack_tariffed.Web
         }
     }
 
+    public class PercentOfTradeResponse
+    {
+        public PercentOfTradeRecord Record { get; } = new();
+        public readonly ApiResponse ApiResponse;
+        public PercentOfTradeResponse(ApiResponse api)
+        {
+
+            ApiResponse = api ?? new ApiResponse();
+
+            if (api == null)
+            {
+                return;
+            }
+
+            try
+            {
+                Record = JsonConvert.DeserializeObject<PercentOfTradeRecord>(api.Message) ?? new PercentOfTradeRecord();
+            }
+            catch
+            {
+                Record = new PercentOfTradeRecord();
+            }
+        }
+    }
+    //{"PercentOfTrade":"13.00%"}
+    public class PercentOfTradeRecord
+    {
+        public string PercentOfTrade { get; set; } = string.Empty;
+    }
+
     public class AggregateResponse
     {
         public PrimaryProducerApiResponse? PrimaryProducerApiResponse { get; set; }
         public ApiResponse? TariffRateResponse { get; set; }
-        public ApiResponse? SpecialResponse { get; set; }
+        public PercentOfTradeResponse? PercentOfTradeResponse { get; set; }
         public ApiResponse? SubstituteResponse { get; set; }
     }
 }

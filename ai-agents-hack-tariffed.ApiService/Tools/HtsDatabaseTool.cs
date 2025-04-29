@@ -3,20 +3,19 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Data;
 using System.Dynamic;
-using System.Runtime.CompilerServices;
 
 namespace ai_agents_hack_tariffed.ApiService.Tools
 {
     public static class HtsDatabaseTool
     {
-        public static async Task<string> GetTariffRateDbSchema(string schema, DbContext context)
+        public static async Task<string> GetTariffRateDbSchema(string entities, DbContext context)
         {
             var results = new List<dynamic>();
 
             await using var command = context.Database.GetDbConnection().CreateCommand();
             command.CommandText = @$"
               SELECT * FROM information_schema.columns 
-              WHERE TABLE_NAME IN ('Hts','Special','TariffRate')
+              WHERE TABLE_NAME IN ({entities})
               FOR JSON PATH, ROOT('Schema')
             ";
             command.CommandType = CommandType.Text;
@@ -88,7 +87,6 @@ namespace ai_agents_hack_tariffed.ApiService.Tools
             {
                 returnValue = JsonConvert.SerializeObject(results);
             }
-
 
             return returnValue;
         }
