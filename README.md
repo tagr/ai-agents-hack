@@ -13,7 +13,7 @@ This problem, and the dizzying pace of news about trade wars and supply chain di
   * *Which countries are the primary importers of goods into the United States?*
   * *What is the potential average rate of duty if tariff policy changes?*
   * *What are some substitute goods that are produced domestically?*
-2. A custom database representing the Harmonized Tariff Schedule and potential rates of duty for all countries.
+2. A custom SQL database representing the Harmonized Tariff Schedule and potential rates of duty for all countries.
 3. A web application to set the agents to work and return the answers to those questions.
 
 ### Author
