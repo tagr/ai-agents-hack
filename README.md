@@ -26,7 +26,11 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 * TODO
 
 ### Architecture
-* TODO
+![agent-diagram](https://github.com/user-attachments/assets/e1ace6e5-a742-4cf8-a1fe-ded9c5204d77)
+*Figure 1. Azure AI Agent Service featuring Grounding with Bing and function tools*
+
+![overall-diagram](https://github.com/user-attachments/assets/1d7a552d-3275-409b-8455-050313007693)
+*Figure 2. Overall system diagram with agents and .NET Aspire Blazor web application*
 
 ### Technologies Applied
 * 🤖 [Azure AI Agent Service](https://learn.microsoft.com/en-us/azure/ai-services/agents/overview)
