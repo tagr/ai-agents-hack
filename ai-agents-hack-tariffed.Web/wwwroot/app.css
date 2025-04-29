@@ -7,25 +7,17 @@
 
 
 html {
-    
-    background-position: center;
-    background-size: auto;
-
 }
 
 body {
     background: url(bg0.jpg) no-repeat top;
+    background-attachment: fixed;
     background-size: auto 100%;
     transition: all 1s;
 }
 
 body.resized {
     background-size: auto 120%;
-}
-
-.header {
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 0 0 2rem 2rem;
 }
 
 .whatshappening {
