@@ -23,7 +23,17 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 * TODO
 
 ### Samples
-* TODO
+![sample1](https://github.com/user-attachments/assets/ade3694e-86df-4417-8a4e-40d8a1917ffa)
+*Figure 1. Search results for __silk__*
+
+![sample2](https://github.com/user-attachments/assets/e5226c19-2153-4b90-a598-8bfa30892b2c)
+*Figure 2. Search results for __cardamom__*
+
+![sample3](https://github.com/user-attachments/assets/1c5c0c67-97eb-4de2-98d8-d19bde15dd38)
+*Figure 3. Substitute recommendations including HTS numbers and Wikipedia links from Bing integration*
+
+![Animation](https://github.com/user-attachments/assets/eaf30a0a-35d5-494f-a832-54e9e13acc84)
+*Figure 4. Key stat animation*
 
 ### Architecture
 ![agent-diagram](https://github.com/user-attachments/assets/e1ace6e5-a742-4cf8-a1fe-ded9c5204d77)
