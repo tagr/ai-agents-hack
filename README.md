@@ -49,3 +49,5 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 ### Project Video
 
 ### Acknowledgements
+* My family (again)
+* Aaron Powell's livestream [Build your code-first app with Azure AI Agent Service (.NET)](https://developer.microsoft.com/en-us/reactor/events/25370/). These examples were critical to my understanding of the Azure AI Agent Service
