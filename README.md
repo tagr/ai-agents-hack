@@ -1,7 +1,7 @@
 ![banner](https://github.com/user-attachments/assets/6f9750b1-02a1-4997-8871-484e0161fe50)
 
 [![Azure AI Agents Hackathon](https://img.shields.io/badge/Azure-AI--Agents--Hackathon-512BD4?style=for-the-badge&logo=microsoft)](https://microsoft.github.io/AI_Agents_Hackathon/)
-# AI Agents Hackathon: TARIFFED!
+# Azure AI Agents Hackathon: TARIFFED!
 
 ### Project Goal
 > The Harmonized Tariff Schedule of the United States (HTS) sets out the tariff rates and statistical categories for all merchandise imported into the United States. 
