@@ -47,7 +47,7 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 ![whatshappening](https://github.com/user-attachments/assets/713a20d5-c54c-4577-8e48-d68fe37d36fd)
 *Figure 3. This diagram appears once a search begins to explain the agent process*
 
-### Technologies Applied
+### Technologies
 * 🤖 [Azure AI Agent Service](https://learn.microsoft.com/en-us/azure/ai-services/agents/overview)
 * 👀 [Grounding with Bing Search](https://learn.microsoft.com/en-us/azure/ai-services/agents/how-to/tools/bing-grounding?tabs=python&pivots=overview)
 * 🟣 [.NET 9 Framework](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview)
