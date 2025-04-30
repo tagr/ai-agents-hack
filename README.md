@@ -22,7 +22,7 @@ This problem, and the dizzying pace of news about trade wars and supply chain di
 Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 
 ### Project Video
-* TODO
+* [TARIFFED - Azure AI Agents Hack on YouTube](https://www.youtube.com/watch?v=vlKdubFDCto)
 
 ### Samples
 ![sample1](https://github.com/user-attachments/assets/ade3694e-86df-4417-8a4e-40d8a1917ffa)
