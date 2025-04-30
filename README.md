@@ -44,6 +44,9 @@ Andy Merhaut (GitHub: [@tagr](https://github.com/tagr))
 ![overall-diagram](https://github.com/user-attachments/assets/1d7a552d-3275-409b-8455-050313007693)
 *Figure 2. Overall system diagram with agents and .NET Aspire Blazor web application*
 
+![whatshappening](https://github.com/user-attachments/assets/713a20d5-c54c-4577-8e48-d68fe37d36fd)
+*Figure 3. This diagram appears once a search begins to explain the agent process*
+
 ### Technologies Applied
 * 🤖 [Azure AI Agent Service](https://learn.microsoft.com/en-us/azure/ai-services/agents/overview)
 * 👀 [Grounding with Bing Search](https://learn.microsoft.com/en-us/azure/ai-services/agents/how-to/tools/bing-grounding?tabs=python&pivots=overview)
