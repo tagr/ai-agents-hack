@@ -4,7 +4,6 @@ using Azure.AI.Projects;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.ClientModel;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ai_agents_hack_tariffed.ApiService.Agents
@@ -26,8 +25,18 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
 
         private readonly bool disposeAgent = true;
 
-        public virtual IEnumerable<ToolDefinition> InitializeTools() => [];
-
+        /// <summary>
+        /// Executes the process of creating and initializing an agent with the specified configuration and tools.
+        /// </summary>
+        /// <remarks>This method clears the current output, initializes the agent client, and creates an
+        /// agent with the specified  configuration. The agent's instructions are generated based on the provided
+        /// instruction file and optional entities.</remarks>
+        /// <param name="agentName">The name to assign to the agent being created.</param>
+        /// <param name="instructionFilePath">The file path to the instruction file that contains the agent's operational guidelines.</param>
+        /// <param name="tools">The tools available to the agent.</param>
+        /// <param name="entities">An optional string representing additional entities to include in the agent's instructions.  If not provided
+        /// or empty, the instructions will be generated without additional entities.</param>
+        /// <returns></returns>
         public async Task RunAsync(string agentName, string instructionFilePath, IEnumerable<ToolDefinition> tools, string entities = "")
         {
             this.OutputBuilder.Clear();
@@ -53,7 +62,16 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
             await Console.Out.WriteLineAsync($"{agentName} created with ID: {agent.Id}");
         }
 
-        public async Task GetResponseAsync(string prompt, string errorContains = "Error:", [CallerMemberName] string callerName = "")
+        /// <summary>
+        /// Sends a prompt to the API, processes the response asynchronously, and appends the result to the output
+        /// builder.
+        /// </summary>
+        /// <remarks>This method initiates an API request, creates a thread and message, and streams the
+        /// response updates. The response is processed incrementally, and the first meaningful result is appended to
+        /// the output builder.</remarks>
+        /// <param name="prompt">The input prompt to send to the API. This represents the user's query or request.</param>
+        /// <returns></returns>
+        public async Task GetResponseAsync(string prompt)
         {
             await Console.Out.WriteLineAsync($"API Request: {prompt}");
 
@@ -108,8 +126,6 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
             switch (update.UpdateKind)
             {
                 case StreamingUpdateReason.RunRequiresAction:
-                    // The run requires an action from the application, such as a tool output submission.
-                    // This is where the application can handle the action.
                     RequiredActionUpdate requiredActionUpdate = (RequiredActionUpdate)update;
                     await HandleActionAsync(requiredActionUpdate);
                     break;
@@ -138,6 +154,25 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
         protected virtual AsyncCollectionResult<StreamingUpdate> HandleRequiredAction(RequiredActionUpdate requiredActionUpdate) =>
             throw new NotImplementedException();
 
+        /// <summary>
+        /// Handles the specified required action asynchronously, performing the appropriate operation based on the
+        /// provided function name and arguments.
+        /// </summary>
+        /// <remarks>This method determines the appropriate action to take based on the <see
+        /// cref="RequiredActionUpdate.FunctionName"/>. It supports specific operations such as querying the database
+        /// using <see cref="HtsDatabaseTool.Query"/> or <see cref="HtsDatabaseTool.QueryAll"/>, as well as handling
+        /// other required actions through a general handler.  If the function name corresponds to a database query, the
+        /// method deserializes the function arguments into <see cref="TariffDatabaseArgs"/> and performs the query. The
+        /// results are then submitted to a streaming client for further processing. For other function names, the
+        /// method delegates the action to a general handler.  Any updates resulting from the action are processed
+        /// asynchronously and appended to the output builder.
+        /// </remarks>
+        /// <param name="requiredActionUpdate">An object containing details about the required action, including the function name, arguments, and other
+        /// contextual information.</param>
+        /// <returns>A task that represents the asynchronous operation. The task completes when the required action has been
+        /// processed and any resulting updates have been handled.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the function arguments cannot be deserialized into a valid <see cref="TariffDatabaseArgs"/>
+        /// object.</exception>
         private async Task HandleActionAsync(RequiredActionUpdate requiredActionUpdate)
         {
             AsyncCollectionResult<StreamingUpdate> toolUpdate;
@@ -210,6 +245,10 @@ namespace ai_agents_hack_tariffed.ApiService.Agents
             } 
         }
 
+        /// <summary>
+        /// Represents the arguments required to query the tariff database.
+        /// </summary>
+        /// <param name="query">The query string used to search the tariff database. This value cannot be null or empty.</param>
         record TariffDatabaseArgs(string query);
     }
 }
