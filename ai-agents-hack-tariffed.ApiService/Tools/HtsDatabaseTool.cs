@@ -8,6 +8,16 @@ namespace ai_agents_hack_tariffed.ApiService.Tools
 {
     public static class HtsDatabaseTool
     {
+        /// <summary>
+        /// Retrieves the database schema information for the specified entities in JSON format.
+        /// </summary>
+        /// <remarks>This method queries the database's information schema to retrieve metadata about the
+        /// columns  of the specified tables. The result is returned as a JSON string with a root element named
+        /// "Schema".</remarks>
+        /// <param name="entities">A comma-separated list of table names for which schema information is requested.</param>
+        /// <param name="context">The <see cref="DbContext"/> used to execute the database query.</param>
+        /// <returns>A JSON string representing the schema information of the specified entities.  The JSON structure includes
+        /// details about the columns of the tables.</returns>
         public static async Task<string> GetTariffRateDbSchema(string entities, DbContext context)
         {
             var results = new List<dynamic>();

@@ -25,6 +25,16 @@ namespace ai_agents_hack_tariffed.ApiService
                 : _connection.ConnectionString += ";Command Timeout=0"; ;
         }
 
+        /// <summary>
+        /// Executes a task that processes SQL initialization logic while monitoring for cancellation
+        /// requests.
+        /// </summary>
+        /// <remarks>This method performs SQL initialization by executing a stored procedure. It logs
+        /// progress and errors during execution. The method will terminate if the <paramref name="cancellationToken"/>
+        /// is triggered.</remarks>
+        /// <param name="cancellationToken">A token that can be used to signal the cancellation of the operation. The method will stop processing if the
+        /// token is canceled.</param>
+        /// <returns>A task that represents the asynchronous operation.
         public async Task<bool> DoWork(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)

@@ -14,14 +14,14 @@
     <HeadOutlet />
 </head>
 
-<body class="bg-white dark:bg-gray-800">
+<body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
 
     <script>
 
         //Watch for resize events to animate the background image
-        const body = document.querySelector("body");
+        const body = document.querySelector("html");
 
         const resizeObserver = new ResizeObserver((entries) => {
           requestAnimationFrame(() => {

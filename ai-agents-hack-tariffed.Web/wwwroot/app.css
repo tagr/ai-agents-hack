@@ -7,17 +7,25 @@
 
 
 html {
-}
-
-body {
-    background: url(bg0.jpg) no-repeat top;
+    background: url(bg0.jpg) no-repeat #000 top;
     background-attachment: fixed;
     background-size: auto 100%;
     transition: all 1s;
 }
 
-body.resized {
+html.resized {
     background-size: auto 120%;
+}
+
+body {
+    background-image: url(3px-tile.png);
+    background-attachment: fixed;
+    
+    background-repeat: repeat;
+}
+
+img[src="logo.png"] {
+    background: rgba(0,0,122,0.5);
 }
 
 .whatshappening {
